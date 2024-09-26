@@ -1,0 +1,5 @@
+CREATE TABLE Movies (
+  TMDB_ID INTEGER PRIMARY KEY,
+  YouTubeLink TEXT,
+  DownloadLink TEXT
+);
