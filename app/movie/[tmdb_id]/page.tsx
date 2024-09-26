@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
-import { FaYoutube, FaDownload, FaLink } from 'react-icons/fa';
+import { FaYoutube, FaDownload} from 'react-icons/fa';
 import { SiLetterboxd, SiThemoviedatabase, SiImdb } from "react-icons/si";
 import Link from 'next/link';
 
