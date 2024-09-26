@@ -12,7 +12,6 @@ interface Movie {
   title: string;
   poster_path: string;
   release_date: string;
-  // Add other properties as needed
 }
 
 const fetchMovies = async (page: number) => {
@@ -32,7 +31,7 @@ const HomePage: React.FC = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
-  // const [error, setError] = useState<string | null>(null); // Uncomment if using error handling
+  const [error, setError] = useState<string | null>(null); // Error state
 
   useEffect(() => {
     const loadMovies = async () => {
@@ -41,10 +40,9 @@ const HomePage: React.FC = () => {
         const data = await fetchMovies(currentPage);
         setMovies(data.results);
         setTotalPages(data.total_pages);
-        // setError(null); // Uncomment if using error handling
+        setError(null); // Clear any previous errors
       } catch (error) {
-        // Consider more specific error handling here
-        // setError('An error occurred while fetching movies.'); // Uncomment if using error handling
+        setError('An error occurred while fetching movies.');
       } finally {
         setLoading(false);
       }
@@ -61,7 +59,7 @@ const HomePage: React.FC = () => {
     const pages = [];
     const maxPagesToShow = 5;
     let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-    let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+    const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1); // Use const
 
     // Adjust startPage if endPage is at maxPagesToShow limit
     if (endPage - startPage < maxPagesToShow - 1) {
@@ -75,7 +73,7 @@ const HomePage: React.FC = () => {
   };
 
   if (loading) return <div className="text-center py-10">চলচ্চিত্রের সংগ্রহশালা লোড হচ্ছে........</div>;
-  // if (error) return <div className="text-center py-10 text-red-500">{error}</div>; // Uncomment if using error handling
+  if (error) return <div className="text-center py-10 text-red-500">{error}</div>; // Error handling
 
   return (
     <div className="justify-center container mx-auto px-4">
@@ -111,7 +109,7 @@ const HomePage: React.FC = () => {
             src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_1-5bdc75aaebeb75dc7ae79426ddd9be3b2be1e342510f8202baf6bffa71d7f5c4.svg"
             alt="TMDB Logo"
             width={100}
-            height={100} // Add height for better aspect ratio
+            height={100}
             className="rounded-lg shadow-md"
           />
         </a>
