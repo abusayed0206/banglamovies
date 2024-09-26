@@ -103,23 +103,25 @@ const MovieList = () => {
           </button>
         )}
       </div>
-      <div className="flex justify-center mt-4">
-        {/* TMDb logo with link */}
-        <a href="https://www.themoviedb.org/" className="mr-4">
+      <div className="flex flex-col items-center mt-4">
+
+        <a href="https://www.themoviedb.org/" className="mb-2">
           <Image
             src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_1-5bdc75aaebeb75dc7ae79426ddd9be3b2be1e342510f8202baf6bffa71d7f5c4.svg"
             alt="TMDB Logo"
             width={100}
             height={100}
-            className="rounded-lg shadow-md"
+            className="shadow-md"
           />
         </a>
 
-        {/* Disclaimer text */}
-        <p className="text-gray-500">
+
+        <p className="text-gray-500 text-center">
           কৃতজ্ঞতা স্বীকারঃ এই ওয়েবসাইটটি TMDB API ব্যবহার করে কিন্তু TMDB দ্বারা এন্ডোর্স বা সার্টিফাইড না! সব ধরনের তথ্য TMDB থেকে নেয়া হয়েছে।
         </p>
       </div>
+
+
     </div>
   );
 };
