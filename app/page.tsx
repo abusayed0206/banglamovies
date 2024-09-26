@@ -41,8 +41,9 @@ const HomePage: React.FC = () => {
         setMovies(data.results);
         setTotalPages(data.total_pages);
         setError(null); // Clear any previous errors
-      } catch (error) {
-        setError('An error occurred while fetching movies.');
+      } catch (err) { // Use `err` for better context
+        console.error(err); // Log the actual error
+        setError('An error occurred while fetching movies.'); // Set error message
       } finally {
         setLoading(false);
       }
@@ -50,6 +51,7 @@ const HomePage: React.FC = () => {
 
     loadMovies();
   }, [currentPage]);
+
 
   const handlePagination = (newPage: number) => {
     window.location.href = `/?page=${newPage}`;
