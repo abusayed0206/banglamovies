@@ -3,13 +3,44 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { FaYoutube, FaDownload, FaLink } from 'react-icons/fa';
-import { SiLetterboxd } from 'react-icons/si';
-import { SiThemoviedatabase } from "react-icons/si";
+import { SiLetterboxd, SiThemoviedatabase } from "react-icons/si";
 import Link from 'next/link';
+
+// Define types for movie details
+interface Movie {
+    id: number;
+    title: string;
+    overview: string;
+    release_date: string;
+    genres: { id: number; name: string }[];
+    runtime: number;
+    poster_path?: string;
+    backdrop_path?: string;
+    credits: {
+        cast: CastMember[];
+        crew: CrewMember[];
+    };
+    production_countries: { name: string }[];
+    imdb_id: string;
+    englishTitle: string; // Add the 'englishTitle' property
+}
+
+interface CastMember {
+    id: number;
+    name: string;
+    profile_path?: string;
+}
+
+interface CrewMember {
+    id: number;
+    name: string;
+    job: string;
+    profile_path?: string;
+}
 
 const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
-const fetchMovieDetails = async (tmdbId: string) => {
+const fetchMovieDetails = async (tmdbId: string): Promise<Movie> => {
     const [bnResponse, enResponse] = await Promise.all([
         fetch(`https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY}&append_to_response=credits&language=bn-BD`),
         fetch(`https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY}&append_to_response=credits&language=en-US`)
@@ -33,7 +64,7 @@ const fetchMovieDetails = async (tmdbId: string) => {
 
 const MovieDetails: React.FC = () => {
     const { tmdb_id } = useParams();
-    const [movie, setMovie] = useState<any>(null);
+    const [movie, setMovie] = useState<Movie | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -43,12 +74,14 @@ const MovieDetails: React.FC = () => {
                 setLoading(true);
                 try {
                     const data = await fetchMovieDetails(tmdb_id as string);
-                    setMovie(data); // Movie includes englishTitle
+                    setMovie(data);
                     setError(null);
                 } catch (err) {
+                    // Log the error but don't set it as it's already handled in the catch block
                     setError('An error occurred while fetching movie details.');
+                } finally {
+                    setLoading(false);
                 }
-                setLoading(false);
             };
 
             loadMovieDetails();
@@ -67,12 +100,12 @@ const MovieDetails: React.FC = () => {
         ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
         : '/default_backdrop.jpg';
 
-    const topCrew = movie.credits?.crew?.filter((person: any) => person.job === "Director" || person.job === "Writer") || [];
+    const topCrew = movie.credits?.crew?.filter((person) => person.job === "Director" || person.job === "Writer") || [];
     const cast = movie.credits?.cast || [];
 
     const releaseYear = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
 
-    const productionCountries = movie.production_countries.map((country: any) => {
+    const productionCountries = movie.production_countries.map((country) => {
         if (country.name === 'Bangladesh') return 'বাংলাদেশ';
         if (country.name === 'India') return 'ভারত';
         return country.name;
@@ -103,9 +136,11 @@ const MovieDetails: React.FC = () => {
 
                     <div className="flex flex-col md:flex-row justify-center items-start gap-6">
                         <div className="relative w-full md:w-1/2 lg:w-1/3">
-                            <img
+                            <Image
                                 src={posterUrl}
                                 alt={`${movie.title} poster`}
+                                width={300}
+                                height={450}
                                 className="rounded-lg shadow-lg mx-auto"
                             />
                         </div>
@@ -164,7 +199,7 @@ const MovieDetails: React.FC = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                         <p><strong>মুক্তির বছর:</strong> {releaseYear}</p>
-                        <p><strong>শ্রেণী:</strong> {movie.genres.map((genre: any) => genre.name).join(', ')}</p>
+                        <p><strong>শ্রেণী:</strong> {movie.genres.map((genre) => genre.name).join(', ')}</p>
                         <p><strong>সময়কাল:</strong> {movie.runtime} মিনিট</p>
                         <p><strong>দেশ:</strong> {productionCountries.join(', ')}</p>
                     </div>
@@ -172,7 +207,7 @@ const MovieDetails: React.FC = () => {
                     <div className="mt-8">
                         <h2 className="text-2xl font-semibold">পরিচালক ও লেখকগণ</h2>
                         <div className="flex flex-wrap justify-center gap-6 mt-4">
-                            {topCrew.map((crew: any) => (
+                            {topCrew.map((crew) => (
                                 <div key={crew.id} className="flex flex-col items-center">
                                     <a href={`https://www.themoviedb.org/person/${crew.id}`} target="_blank" rel="noopener noreferrer">
                                         <Image
@@ -191,7 +226,7 @@ const MovieDetails: React.FC = () => {
 
                         <h2 className="text-2xl font-semibold mt-8">অভিনেতা</h2>
                         <div className="flex flex-wrap justify-center gap-6 mt-4">
-                            {cast.slice(0, 5).map((actor: any) => (
+                            {cast.slice(0, 5).map((actor) => (
                                 <div key={actor.id} className="flex flex-col items-center">
                                     <a href={`https://www.themoviedb.org/person/${actor.id}`} target="_blank" rel="noopener noreferrer">
                                         <Image

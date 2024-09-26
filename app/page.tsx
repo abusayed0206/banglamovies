@@ -1,9 +1,19 @@
-"use client"; // Ensure this is a client component
+"use client";
+
 import { useEffect, useState } from 'react';
 import MovieCard from './components/MovieCard';
-import { useSearchParams } from 'next/navigation'; // Import useSearchParams
+import { useSearchParams } from 'next/navigation';
+import Image from 'next/image'; // Import for optimized image
 
 const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+
+interface Movie {
+  id: number;
+  title: string;
+  poster_path: string;
+  release_date: string;
+  // Add other properties as needed
+}
 
 const fetchMovies = async (page: number) => {
   const response = await fetch(
@@ -17,9 +27,9 @@ const fetchMovies = async (page: number) => {
 
 const HomePage: React.FC = () => {
   const searchParams = useSearchParams();
-  const currentPage = Number(searchParams.get('page')) || 1; // Get current page from searchParams
+  const currentPage = Number(searchParams.get('page')) || 1;
 
-  const [movies, setMovies] = useState<any[]>([]);
+  const [movies, setMovies] = useState<Movie[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,10 +42,12 @@ const HomePage: React.FC = () => {
         setMovies(data.results);
         setTotalPages(data.total_pages);
         setError(null);
-      } catch (err) {
+      } catch (error) {
+        // Consider more specific error handling here
         setError('An error occurred while fetching movies.');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     loadMovies();
@@ -95,21 +107,21 @@ const HomePage: React.FC = () => {
       <div className="flex justify-center mt-4">
         {/* TMDb logo with link */}
         <a href="https://www.themoviedb.org/" className="mr-4">
-          <img
+          <Image
             src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_1-5bdc75aaebeb75dc7ae79426ddd9be3b2be1e342510f8202baf6bffa71d7f5c4.svg"
             alt="TMDB Logo"
-            width="100"
+            width={100}
+            height={100} // Add height for better aspect ratio
             className="rounded-lg shadow-md"
           />
         </a>
 
         {/* Disclaimer text */}
         <p className="text-gray-500">
-          কৃতজ্ঞতা স্বীকারঃ এই ওয়েবসাইটটি TMDB API ব্যবহার করে কিন্তু TMDB দ্বারা এন্ডোর্স বা সার্টিফাইড না! সব ধরনের তথ্য TMDB থেকে নেয়া হয়েছে।
+          কৃতজ্ঞতা স্বীকারঃ এই ওয়েবসাইটটি TMDB API ব্যবহার করে কিন্তু TMDB দ্বারা এন্ডোর্স বা সার্টিফাইড না! সব ধরনের তথ্য TMDB থেকে নেয়া হয়েছে।
         </p>
       </div>
     </div>
-
   );
 };
 
