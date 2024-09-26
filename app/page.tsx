@@ -126,7 +126,6 @@ const MovieList = () => {
   );
 };
 
-// Wrap the MovieList component in Suspense in the HomePage component
 const HomePage: React.FC = () => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
