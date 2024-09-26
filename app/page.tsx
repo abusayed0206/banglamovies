@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import MovieCard from './components/MovieCard';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image'; // Import for optimized image
@@ -24,7 +24,7 @@ const fetchMovies = async (page: number) => {
   return response.json();
 };
 
-const HomePage: React.FC = () => {
+const MovieList = () => {
   const searchParams = useSearchParams();
   const currentPage = Number(searchParams.get('page')) || 1;
 
@@ -51,7 +51,6 @@ const HomePage: React.FC = () => {
 
     loadMovies();
   }, [currentPage]);
-
 
   const handlePagination = (newPage: number) => {
     window.location.href = `/?page=${newPage}`;
@@ -122,6 +121,15 @@ const HomePage: React.FC = () => {
         </p>
       </div>
     </div>
+  );
+};
+
+// Wrap the MovieList component in Suspense in the HomePage component
+const HomePage: React.FC = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <MovieList />
+    </Suspense>
   );
 };
 
