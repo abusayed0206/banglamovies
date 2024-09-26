@@ -32,7 +32,7 @@ const HomePage: React.FC = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // const [error, setError] = useState<string | null>(null); // Uncomment if using error handling
 
   useEffect(() => {
     const loadMovies = async () => {
@@ -41,10 +41,10 @@ const HomePage: React.FC = () => {
         const data = await fetchMovies(currentPage);
         setMovies(data.results);
         setTotalPages(data.total_pages);
-        setError(null);
+        // setError(null); // Uncomment if using error handling
       } catch (error) {
         // Consider more specific error handling here
-        setError('An error occurred while fetching movies.');
+        // setError('An error occurred while fetching movies.'); // Uncomment if using error handling
       } finally {
         setLoading(false);
       }
@@ -75,7 +75,7 @@ const HomePage: React.FC = () => {
   };
 
   if (loading) return <div className="text-center py-10">চলচ্চিত্রের সংগ্রহশালা লোড হচ্ছে........</div>;
-  if (error) return <div className="text-center py-10 text-red-500">{error}</div>;
+  // if (error) return <div className="text-center py-10 text-red-500">{error}</div>; // Uncomment if using error handling
 
   return (
     <div className="justify-center container mx-auto px-4">

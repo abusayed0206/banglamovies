@@ -75,11 +75,13 @@ const MovieDetails: React.FC = () => {
                 try {
                     const data = await fetchMovieDetails(tmdb_id as string);
                     setMovie(data);
+                    // Resetting error state to null since the fetch was successful
                     setError(null);
                 } catch (err) {
-                    // Log the error but don't set it as it's already handled in the catch block
+                    // Set an error message if the fetch fails
                     setError('An error occurred while fetching movie details.');
                 } finally {
+                    // Regardless of success or error, stop loading
                     setLoading(false);
                 }
             };
@@ -87,6 +89,7 @@ const MovieDetails: React.FC = () => {
             loadMovieDetails();
         }
     }, [tmdb_id]);
+
 
     if (loading) return <div className="text-center py-10">লোড হচ্ছে......</div>;
     if (error) return <div className="text-center py-10 text-red-500">{error}</div>;
