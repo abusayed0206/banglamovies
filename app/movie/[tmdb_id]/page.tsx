@@ -21,7 +21,6 @@ interface Movie {
     };
     production_countries: { name: string }[];
     imdb_id: string;
-    englishTitle: string; // Add the 'englishTitle' property
 }
 
 interface CastMember {
@@ -57,7 +56,6 @@ const fetchMovieDetails = async (tmdbId: string): Promise<Movie> => {
         ...bnData,
         overview: bnData.overview || enData.overview,
         title: bnData.title || enData.title,
-        englishTitle: enData.title // English title
     };
 };
 
@@ -162,9 +160,8 @@ const MovieDetails: React.FC = () => {
                         >
                             <SiThemoviedatabase className="text-2xl text-white" />
                         </a>
-
                         <a
-                            href={`https://letterboxd.com/film/${movie.englishTitle.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '')}/`}
+                            href={`https://letterboxd.com/imdb/${movie.imdb_id}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center justify-center w-10 h-10 bg-orange-600 rounded-full shadow-lg hover:bg-orange-700 transition-colors duration-300"
