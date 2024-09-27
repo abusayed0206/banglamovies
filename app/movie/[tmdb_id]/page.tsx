@@ -105,15 +105,18 @@ const MovieDetails: React.FC = () => {
 
     return (
         <div className="min-h-screen flex flex-col">
-            <nav className="bg-white bg-opacity-50 text-gray-800 py-4">
+            <nav className="bg-[#00cc44] bg-opacity-90 text-white py-4">
                 <div className="container mx-auto px-4">
                     <div className="flex justify-center">
-                        <Link href="/" className="text-xl font-bold hover:text-gray-600 transition-colors duration-300">
-                            হোমপেজ
+                        <Link href="/" passHref>
+                            <button className="bg-[#1db954] text-white font-bold py-2 px-4 rounded-full shadow-lg hover:bg-[#1ed760] transition-colors duration-300">
+                                হোমপেজ
+                            </button>
                         </Link>
                     </div>
                 </div>
             </nav>
+
             <div className="p-6 text-center">
                 <div className="flex flex-col md:flex-row justify-center items-center gap-6">
                     <div className="relative w-full md:w-1/2 lg:w-1/3">
