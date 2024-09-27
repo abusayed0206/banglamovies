@@ -105,7 +105,7 @@ const MovieDetails: React.FC = () => {
 
     return (
         <div className="min-h-screen flex flex-col">
-            <nav className="bg-[#00cc44] bg-opacity-90 text-white py-4">
+            <nav className="text-white py-4">
                 <div className="container mx-auto px-4">
                     <div className="flex justify-center">
                         <Link href="/" passHref>
