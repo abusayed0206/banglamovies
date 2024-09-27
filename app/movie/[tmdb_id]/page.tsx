@@ -114,25 +114,16 @@ const MovieDetails: React.FC = () => {
     return (
         <div className="min-h-screen flex flex-col">
 
-            <div
-                className="flex-grow"
-                style={{
-                    backgroundImage: `url(${backdropUrl})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    height: '100vh', // Set height to full viewport
-                    width: '100vw', // Set width to full viewport
-                }}
-            >
-                <nav className=" text-white py-4">
-                    <div className="container mx-auto px-4">
-                        <div className="flex justify-center">
-                            <Link href="/" className="text-xl text-white font-bold hover:text-gray-300 transition-colors duration-300">
-                                হোমপেজ
-                            </Link>
-                        </div>
-                    </div>
-                </nav>
+
+                <nav className="bg-white bg-opacity-50 text-gray-800 py-4">
+    <div className="container mx-auto px-4">
+        <div className="flex justify-center">
+            <Link href="/" className="text-xl font-bold hover:text-gray-600 transition-colors duration-300">
+                হোমপেজ
+            </Link>
+        </div>
+    </div>
+</nav>
                 <div className="p-6 text-center">
 
                     <div className="flex flex-col md:flex-row justify-center items-center gap-6">
