@@ -16,7 +16,7 @@ interface Movie {
 
 const fetchMovies = async (page: number) => {
   const response = await fetch(
-    `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=bn&region=BD&language=bn-BD&page=${page}&sort_by=release_date.asc`
+    `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=bn&region=BD&language=bn-BD&page=${page}`
   );
   if (!response.ok) {
     throw new Error('Failed to fetch movies');
