@@ -184,7 +184,7 @@ const MovieDetails: React.FC = () => {
               </button>
               <button
                 onClick={() => setIsOpenDownload(true)}
-                className="flex items-center rounded-lg justify-center w-10 h-10 bg-blue-600 rounded-full shadow-lg hover:bg-blue-700 transition-colors duration-300"
+                className="flex items-center justify-center w-10 h-10 bg-blue-600 rounded-full shadow-lg hover:bg-blue-700 transition-colors duration-300"
               >
                 <FaDownload className="text-2xl text-white" />
               </button>
