@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, Suspense } from 'react';
-import MovieCard from './components/MovieCard';
-import { useSearchParams } from 'next/navigation';
-import Image from 'next/image'; // Import for optimized image
+import { useEffect, useState, Suspense } from "react";
+import MovieCard from "./components/MovieCard";
+import { useSearchParams } from "next/navigation";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
@@ -19,19 +20,27 @@ const fetchMovies = async (page: number) => {
     `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=bn&region=BD&language=bn-BD&page=${page}`
   );
   if (!response.ok) {
-    throw new Error('Failed to fetch movies');
+    throw new Error("Failed to fetch movies");
   }
   return response.json();
 };
 
 const MovieList = () => {
   const searchParams = useSearchParams();
-  const currentPage = Number(searchParams.get('page')) || 1;
-
+  const currentPage = Number(searchParams.get("page")) || 1;
+  const [searchQuery, setSearchQuery] = useState("");
   const [movies, setMovies] = useState<Movie[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null); // Error state
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?query=${encodeURIComponent(searchQuery)}`);
+    }
+  };
 
   useEffect(() => {
     const loadMovies = async () => {
@@ -41,9 +50,10 @@ const MovieList = () => {
         setMovies(data.results);
         setTotalPages(data.total_pages);
         setError(null); // Clear any previous errors
-      } catch (err) { // Use `err` for better context
+      } catch (err) {
+        // Use `err` for better context
         console.error(err); // Log the actual error
-        setError('An error occurred while fetching movies.'); // Set error message
+        setError("An error occurred while fetching movies."); // Set error message
       } finally {
         setLoading(false);
       }
@@ -73,23 +83,51 @@ const MovieList = () => {
     return pages;
   };
 
-  if (loading) return <div className="text-center py-10">চলচ্চিত্রের সংগ্রহশালা লোড হচ্ছে........</div>;
-  if (error) return <div className="text-center py-10 text-red-500">{error}</div>; // Error handling
+  if (loading)
+    return (
+      <div className="text-center py-10">
+        চলচ্চিত্রের সংগ্রহশালা লোড হচ্ছে........
+      </div>
+    );
+  if (error)
+    return <div className="text-center py-10 text-red-500">{error}</div>; // Error handling
 
   return (
     <div className="justify-center container mx-auto px-4">
-      <h1 className="text-3xl font-bold my-4 text-center">বাংলা চলচ্চিত্রের সংগ্রহশালা</h1>
+      <h1 className="text-3xl font-bold my-4 text-center">
+        বাংলা চলচ্চিত্রের সংগ্রহশালা
+      </h1>
+      <form onSubmit={handleSearch} className="flex justify-center mb-4">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="খুঁজ দ্য সার্চ"
+          className="px-4 py-2 w-64 text-black rounded-l-lg border-2 border-gray-300 focus:outline-none focus:border-blue-500"
+        />
+        <button
+          type="submit"
+          className="px-4 py-2 bg-blue-500 text-white rounded-r-lg hover:bg-blue-600 transition-colors"
+        >
+          খুঁজুন
+        </button>
+      </form>
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-4 mx-auto">
         {movies.map((movie) => (
           <MovieCard key={movie.id} movie={movie} />
         ))}
       </div>
+
       <div className="flex justify-center mt-4">
         {getPaginationNumbers().map((page) => (
           <button
             key={page}
             onClick={() => handlePagination(page)}
-            className={`mx-1 px-3 py-1 border rounded ${currentPage === page ? 'bg-blue-500 text-white' : 'bg-white text-black'}`}
+            className={`mx-1 px-3 py-1 border rounded ${
+              currentPage === page
+                ? "bg-blue-500 text-white"
+                : "bg-white text-black"
+            }`}
           >
             {page}
           </button>
@@ -104,7 +142,6 @@ const MovieList = () => {
         )}
       </div>
       <div className="flex flex-col items-center mt-4">
-
         <a href="https://www.themoviedb.org/" className="mb-2">
           <Image
             src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_1-5bdc75aaebeb75dc7ae79426ddd9be3b2be1e342510f8202baf6bffa71d7f5c4.svg"
@@ -115,13 +152,12 @@ const MovieList = () => {
           />
         </a>
 
-
         <p className="text-gray-500 text-center">
-          কৃতজ্ঞতা স্বীকারঃ এই ওয়েবসাইটটি TMDB API ব্যবহার করে কিন্তু TMDB দ্বারা এন্ডোর্স বা সার্টিফাইড না! সব ধরনের তথ্য TMDB থেকে নেয়া হয়েছে।
+          কৃতজ্ঞতা স্বীকারঃ এই ওয়েবসাইটটি TMDB API ব্যবহার করে কিন্তু TMDB
+          দ্বারা এন্ডোর্স বা সার্টিফাইড না! সব ধরনের তথ্য TMDB থেকে নেয়া
+          হয়েছে।
         </p>
       </div>
-
-
     </div>
   );
 };

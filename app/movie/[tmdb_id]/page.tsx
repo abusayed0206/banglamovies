@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { FaYoutube, FaDownload } from "react-icons/fa";
-import { SiLetterboxd, SiThemoviedatabase, SiImdb } from "react-icons/si";
 import Link from "next/link";
 import Modal from "../../components/Modal";
 
@@ -132,9 +131,13 @@ const MovieDetails: React.FC = () => {
     movie.videos?.results?.filter((video) => video.site === "YouTube") || [];
 
   const handleYoutubeClick = () => {
+    // Open the modal regardless of whether videos are available
+    setIsOpenYoutube(true);
+
     if (youtubeVideos.length > 0) {
       setSelectedVideo(youtubeVideos[0]); // Select the first video by default
-      setIsOpenYoutube(true);
+    } else {
+      setSelectedVideo(null); // No videos available, set to null
     }
   };
 
@@ -183,23 +186,41 @@ const MovieDetails: React.FC = () => {
               rel="noopener noreferrer"
               className="flex items-center justify-center w-10 h-10 bg-gray-600 rounded-full shadow-lg hover:bg-gray-700 transition-colors duration-300"
             >
-              <SiImdb className="text-2xl text-white" />
+              <Image
+                src="https://m.media-amazon.com/images/G/01/IMDb/brand/guidelines/imdb/IMDb_Android_App_Icon._CB443386390_.png"
+                alt="IMDb Logo"
+                width={100}
+                height={100}
+                priority
+              />
             </a>
+
             <a
               href={`https://www.themoviedb.org/movie/${movie.id}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center w-10 h-10 bg-green-600 rounded-full shadow-lg hover:bg-green-700 transition-colors duration-300"
+              className="flex items-center justify-center w-10 h-10 hover:bg-green-700 transition-colors duration-300"
             >
-              <SiThemoviedatabase className="text-2xl text-white" />
+              <Image
+                src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_1-5bdc75aaebeb75dc7ae79426ddd9be3b2be1e342510f8202baf6bffa71d7f5c4.svg"
+                alt="TMDB Logo"
+                width={100}
+                height={100}
+              />
             </a>
+
             <a
               href={`https://letterboxd.com/imdb/${movie.imdb_id}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center w-10 h-10 bg-orange-600 rounded-full shadow-lg hover:bg-orange-700 transition-colors duration-300"
+              className="flex items-center justify-center w-10 h-10  hover:bg-orange-700 transition-colors duration-300"
             >
-              <SiLetterboxd className="text-2xl text-green" />
+              <Image
+                src="https://a.ltrbxd.com/logos/letterboxd-logo-alt-v-neg-rgb.svg"
+                alt="Letterboxd Logo"
+                width={100}
+                height={100}
+              />
             </a>
           </div>
         </div>
@@ -288,24 +309,30 @@ const MovieDetails: React.FC = () => {
         </div>
 
         <Modal isOpen={isOpenYoutube} onClose={() => setIsOpenYoutube(false)}>
-          <div className="p-6">
+          <div className="p-3">
             {youtubeVideos.length > 0 ? (
               <div className="space-y-4">
                 {selectedVideo && (
                   <div className="flex flex-col items-center">
                     <iframe
                       className="w-full aspect-video border-2 border-gray-300 rounded-lg"
-                      src={`https://www.youtube.com/embed/${selectedVideo.key}`}
+                      src={`https://www.youtube.com/embed/${selectedVideo.key}?autoplay=1&mute=1&controls=0`}
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                     ></iframe>
-                    <h3 className="text-base text-black font-semibold mb-2 mt-2">
-                      {selectedVideo.name}
-                    </h3>
+
+                    <Link
+                      href={`https://www.youtube.com/watch?v=${selectedVideo.key}`}
+                      target="_blank"
+                    >
+                      <h4 className="text-base text-black font-semibold mb-2 mt-2">
+                        {selectedVideo.name}
+                      </h4>
+                    </Link>
                   </div>
                 )}
 
-                <div className="flex justify-center space-x-2 mb-4 overflow-x-auto">
+                <div className="flex justify-center mb-2 overflow-x-auto">
                   {youtubeVideos.map((video) => (
                     <button
                       key={video.key}
@@ -322,7 +349,10 @@ const MovieDetails: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <p>No YouTube videos available.</p>
+              <div className="text-lg text-black">
+                কোন ইউটিউব ভিডিও নাই। আপনি চাইলে টিএমডিবি ওয়েবসাইটে ভিডিও লিংক
+                যুক্ত করতে পারেন।
+              </div>
             )}
           </div>
         </Modal>
@@ -330,9 +360,9 @@ const MovieDetails: React.FC = () => {
         <Modal isOpen={isOpenDownload} onClose={() => setIsOpenDownload(false)}>
           <div className="p-6 text-black">
             <h2 className="text-2xl text-black font-bold mb-4">
-              Download Links
+              ডাউনলোড লিংক/স্ট্রিমিং সার্ভিস লিংক
             </h2>
-            <p>Download functionality coming soon...</p>
+            <p>খুব শ্রীগ্রই আসছে...</p>
           </div>
         </Modal>
 
