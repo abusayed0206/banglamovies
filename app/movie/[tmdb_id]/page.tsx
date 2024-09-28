@@ -6,6 +6,8 @@ import { FaYoutube, FaDownload } from "react-icons/fa";
 import Link from "next/link";
 import Modal from "../../components/Modal";
 import Navbar from "@/app/components/Navbar";
+import { IoPlayOutline } from "react-icons/io5";
+import { SiHackaday } from "react-icons/si";
 
 // Define types for movie details
 interface Movie {
@@ -86,6 +88,18 @@ const fetchWatchProviders = async (
   return null;
 };
 
+interface DownloadLink {
+  FDL: string;
+  PDL: string;
+}
+
+const fetchDownloadLinks = async (tmdbId: string): Promise<DownloadLink> => {
+  const response = await fetch(`/api/mdbd/${tmdbId}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch download links");
+  }
+  return response.json();
+};
 // Function to convert English digits to Bengali digits
 const convertToBengaliDigits = (num: number): string => {
   const bengaliDigits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
@@ -104,10 +118,10 @@ const MovieDetails: React.FC = () => {
   const [isOpenYoutube, setIsOpenYoutube] = useState(false);
   const [isOpenDownload, setIsOpenDownload] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
-
-  // State to store watch providers
   const [watchProviders, setWatchProviders] =
     useState<WatchProviderResponse | null>(null);
+  const [downloadLinks, setDownloadLinks] = useState<DownloadLink | null>(null);
+  const [downloadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (tmdb_id) {
@@ -129,19 +143,28 @@ const MovieDetails: React.FC = () => {
     }
   }, [tmdb_id]);
 
-  // Fetch watch providers when the download modal opens
+  // Fetch watch providers and download links when the download modal opens
   useEffect(() => {
     if (isOpenDownload && tmdb_id) {
-      const loadWatchProviders = async () => {
+      const loadData = async () => {
         try {
-          const data = await fetchWatchProviders(tmdb_id as string);
-          setWatchProviders(data);
+          // Fetch both watch providers and download links concurrently
+          const [watchProvidersData, downloadLinksData] = await Promise.all([
+            fetchWatchProviders(tmdb_id as string),
+            fetchDownloadLinks(tmdb_id as string),
+          ]);
+
+          // Set the watch providers data
+          setWatchProviders(watchProvidersData);
+
+          // Set the download links data
+          setDownloadLinks(downloadLinksData);
         } catch (err) {
-          console.error("Error fetching watch providers:", err);
+          console.error("Error fetching data:", err);
         }
       };
 
-      loadWatchProviders();
+      loadData();
     }
   }, [isOpenDownload, tmdb_id]);
 
@@ -399,47 +422,78 @@ const MovieDetails: React.FC = () => {
             onClose={() => setIsOpenDownload(false)}
           >
             <div className="p-4">
-              {watchProviders ? (
-                <div className="flex flex-col items-center">
-                  <h2 className="text-xl text-black font-bold mb-4 text-center">
-                    এখানে স্ট্রিম করুনঃ
-                  </h2>
-                  <div className="flex flex-wrap justify-center mb-4">
-                    {watchProviders.flatrate.map((provider, index) => (
-                      <a
-                        key={index}
-                        href={watchProviders.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="m-2 rounded-lg overflow-hidden" // Add rounded-lg and overflow-hidden
-                      >
-                        <Image
-                          src={`https://image.tmdb.org/t/p/w200${provider.logo_path}`}
-                          alt={provider.provider_name}
-                          width={48}
-                          height={48}
-                          className="h-12 w-12 object-contain rounded-lg" // Optional: add rounded-lg here too
-                        />
-                      </a>
-                    ))}
+              <div className="mb-8">
+                <h2 className="text-xl text-black font-bold mb-4 text-center">
+                  ডাউনলোড করুনঃ
+                </h2>
+                {downloadLinks ? (
+                  <div className="flex flex-col items-center">
+                    <a
+                      href={downloadLinks.FDL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-blue-500 text-white px-4 py-2 rounded mb-2 hover:bg-blue-600 transition-colors"
+                    >
+                      ফাস্ট ডাউনলোড লিংক
+                    </a>
+                    <a
+                      href={downloadLinks.PDL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
+                    >
+                      প্রিমিয়াম ডাউনলোড লিংক
+                    </a>
                   </div>
-
-                  <p className="text-xs mt-4 flex text-black items-center justify-center">
-                    স্ট্রিমিং লিংক সংগ্রহে সহযোগিতায়
-                    <Image
-                      src="/jw.png"
-                      alt="JustWatch"
-                      width={16}
-                      height={16}
-                      className="ml-2"
-                    />
+                ) : (
+                  <p className="text-black text-center">
+                    {downloadError || "ডাউনলোড লিংক লোড হচ্ছে..."}
                   </p>
-                </div>
-              ) : (
-                <p className="text-black">
-                  কোন স্ট্রিমিং পরিষেবা পাওয়া যায়নি।
-                </p>
-              )}
+                )}
+              </div>
+
+              <div className="border-t pt-8">
+                <h2 className="text-xl text-black font-bold mb-4 text-center">
+                  এখানে স্ট্রিম করুনঃ
+                </h2>
+                {watchProviders ? (
+                  <div className="flex flex-col items-center">
+                    <div className="flex flex-wrap justify-center mb-4">
+                      {watchProviders.flatrate.map((provider, index) => (
+                        <a
+                          key={index}
+                          href={watchProviders.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="m-2 rounded-lg overflow-hidden"
+                        >
+                          <Image
+                            src={`https://image.tmdb.org/t/p/w200${provider.logo_path}`}
+                            alt={provider.provider_name}
+                            width={48}
+                            height={48}
+                            className="h-12 w-12 object-contain rounded-lg"
+                          />
+                        </a>
+                      ))}
+                    </div>
+                    <p className="text-xs mt-4 flex text-black items-center justify-center">
+                      স্ট্রিমিং লিংক সংগ্রহে সহযোগিতায়
+                      <Image
+                        src="/jw.png"
+                        alt="JustWatch"
+                        width={16}
+                        height={16}
+                        className="ml-2"
+                      />
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-black text-center">
+                    কোন স্ট্রিমিং পরিষেবা পাওয়া যায়নি।
+                  </p>
+                )}
+              </div>
             </div>
           </Modal>
           {/* TMDB attribution */}
