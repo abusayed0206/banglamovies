@@ -6,6 +6,7 @@ import { FaYoutube, FaDownload } from "react-icons/fa";
 import Link from "next/link";
 import Modal from "../../components/Modal";
 import Navbar from "@/app/components/Navbar";
+import WatchProvider from "@app/components/WatchProvider"
 
 // Define types for movie details
 interface Movie {
@@ -60,32 +61,11 @@ const convertToBengaliDigits = (num: number): string => {
 };
 
 const fetchMovieDetails = async (tmdbId: string): Promise<Movie> => {
-  const [bnResponse, enResponse] = await Promise.all([
-    fetch(
-      `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY}&append_to_response=credits,videos&language=bn-BD`
-    ),
-    fetch(
-      `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY}&append_to_response=credits,videos&language=en-US`
-    ),
-  ]);
-
-  if (!bnResponse.ok || !enResponse.ok) {
+  const response = await fetch(`/api/movie/${tmdbId}`);
+  if (!response.ok) {
     throw new Error("Failed to fetch movie details");
   }
-
-  const bnData = await bnResponse.json();
-  const enData = await enResponse.json();
-  const bnVideos = bnData.videos?.results || [];
-  const enVideos = enData.videos?.results || [];
-  const combinedVideos = [...bnVideos, ...enVideos];
-
-  return {
-    ...enData,
-    ...bnData,
-    overview: bnData.overview || enData.overview,
-    title: bnData.title || enData.title,
-    videos: { results: combinedVideos },
-  };
+  return response.json();
 };
 
 const MovieDetails: React.FC = () => {
@@ -338,7 +318,7 @@ const MovieDetails: React.FC = () => {
                     <div className="flex flex-col items-center">
                       <iframe
                         className="w-full aspect-video border-2 border-gray-300 rounded-lg"
-                        src={`https://www.youtube.com/embed/${selectedVideo.key}?autoplay=1&mute=1&controls=0`}
+                        src={`https://www.youtube.com/embed/${selectedVideo.key}?autoplay=1&mute=1&controls=1`}
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
                       ></iframe>
@@ -359,11 +339,10 @@ const MovieDetails: React.FC = () => {
                       <button
                         key={video.key}
                         onClick={() => setSelectedVideo(video)}
-                        className={`px-3 py-1 rounded mx-2 ${
-                          selectedVideo?.key === video.key
+                        className={`px-3 py-1 rounded mx-2 ${selectedVideo?.key === video.key
                             ? "bg-red-600 text-white"
                             : "bg-gray-200 text-gray-800"
-                        }`}
+                          }`}
                       >
                         {video.type}
                       </button>
@@ -383,44 +362,39 @@ const MovieDetails: React.FC = () => {
             isOpen={isOpenDownload}
             onClose={() => setIsOpenDownload(false)}
           >
-            <div className="p-6 text-black">
-              <h2 className="text-2xl text-black font-bold mb-4">
-                ডাউনলোড লিংক/স্ট্রিমিং সার্ভিস লিংক
-              </h2>
-              <p>খুব শ্রীগ্রই আসছে...</p>
-            </div>
-          </Modal>
+          </WatchProvider/>
+        </Modal>
 
-          {/* TMDB attribution */}
-          <div className="flex flex-col items-center mt-4">
-            <a href="https://www.themoviedb.org/" className="mb-2">
-              <Image
-                src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_1-5bdc75aaebeb75dc7ae79426ddd9be3b2be1e342510f8202baf6bffa71d7f5c4.svg"
-                alt="TMDB Logo"
-                width={100}
-                height={100}
-                className="shadow-md"
-              />
+        {/* TMDB attribution */}
+        <div className="flex flex-col items-center mt-4">
+          <a href="https://www.themoviedb.org/" className="mb-2">
+            <Image
+              src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_1-5bdc75aaebeb75dc7ae79426ddd9be3b2be1e342510f8202baf6bffa71d7f5c4.svg"
+              alt="TMDB Logo"
+              width={100}
+              height={100}
+              className="shadow-md"
+            />
+          </a>
+          <p className="text-gray-500 text-center">
+            কৃতজ্ঞতা স্বীকারঃ এই ওয়েবসাইটটি TMDB API ব্যবহার করে কিন্তু TMDB
+            দ্বারা এন্ডোর্স বা সার্টিফাইড না! সব ধরনের তথ্য TMDB থেকে নেয়া
+            হয়েছে।
+          </p>
+          <p className="text-gray-500 text-center">
+            সোর্স কোড:{" "}
+            <a
+              className="text-blue-500 text-xl"
+              href="https://github.com/abusayed0206/banglamovies/"
+            >
+              গিটহাব
             </a>
-            <p className="text-gray-500 text-center">
-              কৃতজ্ঞতা স্বীকারঃ এই ওয়েবসাইটটি TMDB API ব্যবহার করে কিন্তু TMDB
-              দ্বারা এন্ডোর্স বা সার্টিফাইড না! সব ধরনের তথ্য TMDB থেকে নেয়া
-              হয়েছে।
-            </p>
-            <p className="text-gray-500 text-center">
-              সোর্স কোড:{" "}
-              <a
-                className="text-blue-500 text-xl"
-                href="https://github.com/abusayed0206/banglamovies/"
-              >
-                গিটহাব
-              </a>
-              <br />
-            </p>
-          </div>
+            <br />
+          </p>
         </div>
       </div>
     </div>
+    </div >
   );
 };
 

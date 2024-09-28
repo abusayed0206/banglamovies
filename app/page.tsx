@@ -1,13 +1,10 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import MovieCard from "./components/MovieCard";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import Navbar from "./components/Navbar";
-
-const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
 interface Movie {
   id: number;
@@ -16,10 +13,17 @@ interface Movie {
   release_date: string;
 }
 
+const convertToBengaliDigits = (num: number): string => {
+  const bengaliDigits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+  return num
+    .toString() // Convert the number to a string
+    .split("") // Split it into individual characters
+    .map((digit) => bengaliDigits[parseInt(digit)] || digit) // Map each digit to its Bengali counterpart, or keep non-digit characters
+    .join(""); // Join the mapped digits back together
+};
+
 const fetchMovies = async (page: number) => {
-  const response = await fetch(
-    `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=bn&region=BD&language=bn-BD&page=${page}`
-  );
+  const response = await fetch(`/api/discover?page=${page}`);
   if (!response.ok) {
     throw new Error("Failed to fetch movies");
   }
@@ -50,11 +54,10 @@ const MovieList = () => {
         const data = await fetchMovies(currentPage);
         setMovies(data.results);
         setTotalPages(data.total_pages);
-        setError(null); // Clear any previous errors
+        setError(null);
       } catch (err) {
-        // Use `err` for better context
-        console.error(err); // Log the actual error
-        setError("An error occurred while fetching movies."); // Set error message
+        console.error(err);
+        setError("চলচ্চিত্র লোড করার সময় একটি ত্রুটি ঘটেছে।");
       } finally {
         setLoading(false);
       }
@@ -71,9 +74,8 @@ const MovieList = () => {
     const pages = [];
     const maxPagesToShow = 5;
     let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-    const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1); // Use const
+    const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
 
-    // Adjust startPage if endPage is at maxPagesToShow limit
     if (endPage - startPage < maxPagesToShow - 1) {
       startPage = Math.max(1, endPage - maxPagesToShow + 1);
     }
@@ -91,7 +93,7 @@ const MovieList = () => {
       </div>
     );
   if (error)
-    return <div className="text-center py-10 text-red-500">{error}</div>; // Error handling
+    return <div className="text-center py-10 text-red-500">{error}</div>;
 
   return (
     <div className="justify-center mx-auto px-4">
@@ -130,7 +132,7 @@ const MovieList = () => {
                 : "bg-white text-black"
             }`}
           >
-            {page}
+            {convertToBengaliDigits(page)}
           </button>
         ))}
         {currentPage < totalPages && (

@@ -1,7 +1,7 @@
 // app/api/search/route.ts
 import { NextResponse } from 'next/server';
 
-const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+const TMDB_API_KEY = process.env.TMDB_API_KEY;
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
