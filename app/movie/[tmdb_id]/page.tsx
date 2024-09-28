@@ -6,7 +6,6 @@ import { FaYoutube, FaDownload } from "react-icons/fa";
 import Link from "next/link";
 import Modal from "../../components/Modal";
 import Navbar from "@/app/components/Navbar";
-import WatchProvider from "@app/components/WatchProvider"
 
 // Define types for movie details
 interface Movie {
@@ -48,7 +47,44 @@ interface Video {
   site: string;
 }
 
-const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+// Interface for Watch Providers
+interface Provider {
+  logo_path: string;
+  provider_name: string;
+}
+
+interface WatchProviderResponse {
+  flatrate: Provider[];
+  link: string;
+}
+
+// Fetch movie details
+const fetchMovieDetails = async (tmdbId: string): Promise<Movie> => {
+  const response = await fetch(`/api/movie/${tmdbId}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch movie details");
+  }
+  return response.json();
+};
+
+// Fetch watch providers from the API
+const fetchWatchProviders = async (
+  tmdbId: string
+): Promise<WatchProviderResponse | null> => {
+  const response = await fetch(`/api/watch/provider/${tmdbId}`);
+  if (!response.ok) {
+    console.error("Failed to fetch watch providers");
+    return null;
+  }
+  const data = await response.json();
+  if (data.flatrate && data.link) {
+    return {
+      flatrate: data.flatrate,
+      link: data.link,
+    };
+  }
+  return null;
+};
 
 // Function to convert English digits to Bengali digits
 const convertToBengaliDigits = (num: number): string => {
@@ -60,14 +96,6 @@ const convertToBengaliDigits = (num: number): string => {
     .join(""); // Join the mapped digits back together
 };
 
-const fetchMovieDetails = async (tmdbId: string): Promise<Movie> => {
-  const response = await fetch(`/api/movie/${tmdbId}`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch movie details");
-  }
-  return response.json();
-};
-
 const MovieDetails: React.FC = () => {
   const { tmdb_id } = useParams();
   const [movie, setMovie] = useState<Movie | null>(null);
@@ -76,6 +104,10 @@ const MovieDetails: React.FC = () => {
   const [isOpenYoutube, setIsOpenYoutube] = useState(false);
   const [isOpenDownload, setIsOpenDownload] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+
+  // State to store watch providers
+  const [watchProviders, setWatchProviders] =
+    useState<WatchProviderResponse | null>(null);
 
   useEffect(() => {
     if (tmdb_id) {
@@ -97,6 +129,22 @@ const MovieDetails: React.FC = () => {
     }
   }, [tmdb_id]);
 
+  // Fetch watch providers when the download modal opens
+  useEffect(() => {
+    if (isOpenDownload && tmdb_id) {
+      const loadWatchProviders = async () => {
+        try {
+          const data = await fetchWatchProviders(tmdb_id as string);
+          setWatchProviders(data);
+        } catch (err) {
+          console.error("Error fetching watch providers:", err);
+        }
+      };
+
+      loadWatchProviders();
+    }
+  }, [isOpenDownload, tmdb_id]);
+
   if (loading) return <div className="text-center py-10">লোড হচ্ছে......</div>;
   if (error)
     return <div className="text-center py-10 text-red-500">{error}</div>;
@@ -110,8 +158,6 @@ const MovieDetails: React.FC = () => {
       (person) => person.job === "Director" || person.job === "Writer"
     ) || [];
   const cast = movie.credits?.cast || [];
-
-  // Convert release year and runtime to Bengali digits
   const releaseYear = movie.release_date
     ? new Date(movie.release_date).getFullYear()
     : "";
@@ -129,13 +175,11 @@ const MovieDetails: React.FC = () => {
     movie.videos?.results?.filter((video) => video.site === "YouTube") || [];
 
   const handleYoutubeClick = () => {
-    // Open the modal regardless of whether videos are available
     setIsOpenYoutube(true);
-
     if (youtubeVideos.length > 0) {
-      setSelectedVideo(youtubeVideos[0]); // Select the first video by default
+      setSelectedVideo(youtubeVideos[0]);
     } else {
-      setSelectedVideo(null); // No videos available, set to null
+      setSelectedVideo(null);
     }
   };
 
@@ -189,12 +233,7 @@ const MovieDetails: React.FC = () => {
                 rel="noopener noreferrer"
                 className="flex items-center rounded-lg justify-center w-10 h-10 hover:bg-green-700 transition-colors duration-300"
               >
-                <Image
-                  src="/tmdb.svg"
-                  alt="TMDB Logo"
-                  width={50}
-                  height={50}
-                />
+                <Image src="/tmdb.svg" alt="TMDB Logo" width={50} height={50} />
               </a>
 
               <a
@@ -226,19 +265,16 @@ const MovieDetails: React.FC = () => {
               </a>
             </div>
           </div>
-
           <h1 className="text-4xl font-bold mb-4 mt-8">
             {movie.title}{" "}
             <span className="text-lg font-normal">({releaseYearBengali})</span>
           </h1>
-
           <div className="mt-6 text-lg">
             <p>
               <strong>সংক্ষিপ্ত বিবরণ:</strong>
             </p>
             <p>{movie.overview || "বর্ণনা উপলভ্য নেই।"}</p>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
             <p>
               <strong>মুক্তির বছর:</strong> {releaseYearBengali}
@@ -254,7 +290,6 @@ const MovieDetails: React.FC = () => {
               <strong>দেশ:</strong> {productionCountries.join(", ")}
             </p>
           </div>
-
           <div className="mt-8">
             <h2 className="text-2xl font-semibold">পরিচালক ও লেখকগণ</h2>
             <div className="flex flex-wrap justify-center gap-6 mt-4">
@@ -283,7 +318,9 @@ const MovieDetails: React.FC = () => {
               ))}
             </div>
 
-            <h2 className="text-2xl font-semibold mt-8">অভিনেতা</h2>
+            <h2 className="text-2xl font-semibold mt-8">
+              উল্লেখযোগ্য অভিনেতা ও অভিনেত্রী
+            </h2>
             <div className="flex flex-wrap justify-center gap-6 mt-4">
               {cast.slice(0, 5).map((actor) => (
                 <div key={actor.id} className="flex flex-col items-center">
@@ -309,7 +346,6 @@ const MovieDetails: React.FC = () => {
               ))}
             </div>
           </div>
-
           <Modal isOpen={isOpenYoutube} onClose={() => setIsOpenYoutube(false)}>
             <div className="p-3">
               {youtubeVideos.length > 0 ? (
@@ -339,10 +375,11 @@ const MovieDetails: React.FC = () => {
                       <button
                         key={video.key}
                         onClick={() => setSelectedVideo(video)}
-                        className={`px-3 py-1 rounded mx-2 ${selectedVideo?.key === video.key
+                        className={`px-3 py-1 rounded mx-2 ${
+                          selectedVideo?.key === video.key
                             ? "bg-red-600 text-white"
                             : "bg-gray-200 text-gray-800"
-                          }`}
+                        }`}
                       >
                         {video.type}
                       </button>
@@ -357,44 +394,84 @@ const MovieDetails: React.FC = () => {
               )}
             </div>
           </Modal>
-
           <Modal
             isOpen={isOpenDownload}
             onClose={() => setIsOpenDownload(false)}
           >
-          </WatchProvider/>
-        </Modal>
+            <div className="p-4">
+              {watchProviders ? (
+                <div className="flex flex-col items-center">
+                  <h2 className="text-xl text-black font-bold mb-4 text-center">
+                    এখানে স্ট্রিম করুনঃ
+                  </h2>
+                  <div className="flex flex-wrap justify-center mb-4">
+                    {watchProviders.flatrate.map((provider, index) => (
+                      <a
+                        key={index}
+                        href={watchProviders.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="m-2 rounded-lg overflow-hidden" // Add rounded-lg and overflow-hidden
+                      >
+                        <Image
+                          src={`https://image.tmdb.org/t/p/w200${provider.logo_path}`}
+                          alt={provider.provider_name}
+                          width={48}
+                          height={48}
+                          className="h-12 w-12 object-contain rounded-lg" // Optional: add rounded-lg here too
+                        />
+                      </a>
+                    ))}
+                  </div>
 
-        {/* TMDB attribution */}
-        <div className="flex flex-col items-center mt-4">
-          <a href="https://www.themoviedb.org/" className="mb-2">
-            <Image
-              src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_1-5bdc75aaebeb75dc7ae79426ddd9be3b2be1e342510f8202baf6bffa71d7f5c4.svg"
-              alt="TMDB Logo"
-              width={100}
-              height={100}
-              className="shadow-md"
-            />
-          </a>
-          <p className="text-gray-500 text-center">
-            কৃতজ্ঞতা স্বীকারঃ এই ওয়েবসাইটটি TMDB API ব্যবহার করে কিন্তু TMDB
-            দ্বারা এন্ডোর্স বা সার্টিফাইড না! সব ধরনের তথ্য TMDB থেকে নেয়া
-            হয়েছে।
-          </p>
-          <p className="text-gray-500 text-center">
-            সোর্স কোড:{" "}
-            <a
-              className="text-blue-500 text-xl"
-              href="https://github.com/abusayed0206/banglamovies/"
-            >
-              গিটহাব
+                  <p className="text-xs mt-4 flex text-black items-center justify-center">
+                    স্ট্রিমিং লিংক সংগ্রহে সহযোগিতায়
+                    <Image
+                      src="/jw.png"
+                      alt="JustWatch"
+                      width={16}
+                      height={16}
+                      className="ml-2"
+                    />
+                  </p>
+                </div>
+              ) : (
+                <p className="text-black">
+                  কোন স্ট্রিমিং পরিষেবা পাওয়া যায়নি।
+                </p>
+              )}
+            </div>
+          </Modal>
+          {/* TMDB attribution */}
+          <div className="flex flex-col items-center mt-4">
+            <a href="https://www.themoviedb.org/" className="mb-2">
+              <Image
+                src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_1-5bdc75aaebeb75dc7ae79426ddd9be3b2be1e342510f8202baf6bffa71d7f5c4.svg"
+                alt="TMDB Logo"
+                width={100}
+                height={100}
+                className="shadow-md"
+              />
             </a>
-            <br />
-          </p>
+            <p className="text-gray-500 text-center">
+              কৃতজ্ঞতা স্বীকারঃ এই ওয়েবসাইটটি TMDB API ব্যবহার করে কিন্তু TMDB
+              দ্বারা এন্ডোর্স বা সার্টিফাইড না! সব ধরনের তথ্য TMDB থেকে নেয়া
+              হয়েছে।
+            </p>
+            <p className="text-gray-500 text-center">
+              সোর্স কোড:{" "}
+              <a
+                className="text-blue-500 text-xl"
+                href="https://github.com/abusayed0206/banglamovies/"
+              >
+                গিটহাব
+              </a>
+              <br />
+            </p>
+          </div>
         </div>
       </div>
     </div>
-    </div >
   );
 };
 
