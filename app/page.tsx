@@ -128,7 +128,7 @@ const MovieList = () => {
 
 const HomePage: React.FC = () => {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div>লোড হচ্ছে ....</div>}>
       <MovieList />
     </Suspense>
   );
