@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import { Hind_Siliguri } from "next/font/google";
-import "./globals.css";
+import { Tiro_Bangla } from "next/font/google";
 import "./globals.css";
 
-const inter = Hind_Siliguri({
+const inter = Tiro_Bangla({
   weight: "400",
   subsets: ["latin"],
   display: "swap",
 });
 
+
 export const metadata: Metadata = {
   title: "বাংলা চলচ্চিত্র",
-  description: "ইউটিউব লিংক/ডাউনলোড লিংকসহ বাংলা চলচ্চিত্রের সংগ্রহশালা",
+  description: "বাংলা চলচ্চিত্রের সংগ্রহশালা",
   metadataBase: new URL("https://banglamovies.sayed.page/"),
   icons: [
     {

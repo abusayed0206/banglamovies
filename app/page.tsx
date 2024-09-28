@@ -5,6 +5,7 @@ import MovieCard from "./components/MovieCard";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import Navbar from "./components/Navbar";
 
 const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
@@ -93,26 +94,26 @@ const MovieList = () => {
     return <div className="text-center py-10 text-red-500">{error}</div>; // Error handling
 
   return (
-    <div className="justify-center container mx-auto px-4">
-      <h1 className="text-3xl font-bold my-4 text-center">
-        বাংলা চলচ্চিত্রের সংগ্রহশালা
-      </h1>
-      <form onSubmit={handleSearch} className="flex justify-center mb-4">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="খুঁজ দ্য সার্চ"
-          className="px-4 py-2 w-64 text-black rounded-l-lg border-2 border-gray-300 focus:outline-none focus:border-blue-500"
-        />
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-500 text-white rounded-r-lg hover:bg-blue-600 transition-colors"
-        >
-          খুঁজুন
-        </button>
-      </form>
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-4 mx-auto">
+    <div className="justify-center mx-auto px-4">
+      <Navbar />
+      <div className="text-center text-xl font-bold mt-4">
+        <form onSubmit={handleSearch} className="flex justify-center mb-4">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="খুঁজ দ্য সার্চ"
+            className="px-4 py-2 w-64 text-black rounded-l-lg border-2 border-gray-300 focus:outline-none focus:border-blue-500"
+          />
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-500 text-white rounded-r-lg hover:bg-blue-600 transition-colors"
+          >
+            খুঁজুন
+          </button>
+        </form>
+      </div>
+      <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 mx-auto">
         {movies.map((movie) => (
           <MovieCard key={movie.id} movie={movie} />
         ))}
@@ -137,18 +138,18 @@ const MovieList = () => {
             onClick={() => handlePagination(currentPage + 1)}
             className="mx-1 px-3 py-1 border rounded bg-blue-500 text-white"
           >
-            Next
+            পরের পাতা
           </button>
         )}
       </div>
       <div className="flex flex-col items-center mt-4">
-        <a href="https://www.themoviedb.org/" className="mb-2">
+        <a href="https://www.themoviedb.org/" className="mb-2 ">
           <Image
             src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_1-5bdc75aaebeb75dc7ae79426ddd9be3b2be1e342510f8202baf6bffa71d7f5c4.svg"
             alt="TMDB Logo"
             width={100}
             height={100}
-            className="shadow-md"
+            className="rounded-sm"
           />
         </a>
 
@@ -156,6 +157,16 @@ const MovieList = () => {
           কৃতজ্ঞতা স্বীকারঃ এই ওয়েবসাইটটি TMDB API ব্যবহার করে কিন্তু TMDB
           দ্বারা এন্ডোর্স বা সার্টিফাইড না! সব ধরনের তথ্য TMDB থেকে নেয়া
           হয়েছে।
+        </p>
+        <p className="text-gray-500 text-center">
+          সোর্স কোড:{" "}
+          <a
+            className="text-blue-500 text-xl"
+            href="https://github.com/abusayed0206/banglamovies/"
+          >
+            গিটহাব
+          </a>
+          <br />
         </p>
       </div>
     </div>
