@@ -113,7 +113,7 @@ const MovieList = () => {
           </button>
         </form>
       </div>
-      <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 mx-auto">
+      <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-4 mx-auto">
         {movies.map((movie) => (
           <MovieCard key={movie.id} movie={movie} />
         ))}
