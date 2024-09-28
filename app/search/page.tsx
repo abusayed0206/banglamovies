@@ -1,13 +1,22 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react"; // Move Suspense import up
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
 import { SearchResults } from "../components/SearchResults";
 import Link from "next/link";
 
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Wrap the useSearchParams hook in a Suspense component
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <InnerSearchPage searchParams={searchParams} router={router} />
+    </Suspense>
+  );
+}
+
+function InnerSearchPage({ searchParams, router }) {
   const query = searchParams.get("query") || "";
 
   // Use a temporary state for the input
@@ -62,7 +71,9 @@ export default function SearchPage() {
         {finalQuery ? (
           <Suspense
             fallback={
-              <p className="text-center">সঠিকভাবে সিনেমার নাম লিখার চেষ্টা করুন</p>
+              <p className="text-center">
+                সঠিকভাবে সিনেমার নাম লিখার চেষ্টা করুন
+              </p>
             }
           >
             <SearchResults query={finalQuery} />
@@ -73,5 +84,4 @@ export default function SearchPage() {
       </div>
     </div>
   );
-  
-}  
+}
