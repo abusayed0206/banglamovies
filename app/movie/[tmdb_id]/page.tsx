@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -6,6 +7,7 @@ import { FaYoutube, FaDownload } from "react-icons/fa";
 import Link from "next/link";
 import Modal from "../../components/Modal";
 import Navbar from "@/app/components/Navbar";
+import { numBang, dateBang, timeBang } from "bang-utils";
 
 // Define types for movie details
 interface Movie {
@@ -86,16 +88,6 @@ const fetchWatchProviders = async (
   return null;
 };
 
-// Function to convert English digits to Bengali digits
-const convertToBengaliDigits = (num: number): string => {
-  const bengaliDigits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
-  return num
-    .toString() // Convert the number to a string
-    .split("") // Split it into individual characters
-    .map((digit) => bengaliDigits[parseInt(digit)]) // Map each digit to its Bengali counterpart
-    .join(""); // Join the mapped digits back together
-};
-
 const MovieDetails: React.FC = () => {
   const { tmdb_id } = useParams();
   const [movie, setMovie] = useState<Movie | null>(null);
@@ -126,6 +118,28 @@ const MovieDetails: React.FC = () => {
       };
 
       loadMovieDetails();
+    }
+  }, [tmdb_id]);
+
+  const [isWatched, setIsWatched] = useState<boolean | null>(null);
+  const [modalMessage, setModalMessage] = useState<React.ReactNode>(null);
+  const [isOpenStatusModal, setIsOpenStatusModal] = useState<boolean>(false);
+
+  // Function to check if the movie is watched
+  const checkIfWatched = async (tmdbId: string) => {
+    const response = await fetch(`/api/trakt/lookup?tmdbid=${tmdbId}`);
+    if (!response.ok) {
+      console.error("Failed to fetch watched status");
+      return;
+    }
+    const data = await response.json();
+    setIsWatched(data[0]?.watched_at !== "none");
+  };
+
+  // Call the checkIfWatched function
+  useEffect(() => {
+    if (tmdb_id) {
+      checkIfWatched(tmdb_id as string);
     }
   }, [tmdb_id]);
 
@@ -161,9 +175,8 @@ const MovieDetails: React.FC = () => {
   const releaseYear = movie.release_date
     ? new Date(movie.release_date).getFullYear()
     : "";
-  const releaseYearBengali = convertToBengaliDigits(releaseYear || 0);
-
-  const runtimeBengali = convertToBengaliDigits(movie.runtime);
+  const releaseYearBengali = numBang((releaseYear || 0).toString());
+  const runtimeBengali = numBang(movie.runtime.toString());
 
   const productionCountries = movie.production_countries.map((country) => {
     if (country.name === "Bangladesh") return "বাংলাদেশ";
@@ -198,20 +211,147 @@ const MovieDetails: React.FC = () => {
                 className="rounded-lg shadow-lg mx-auto"
               />
             </div>
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex md:flex-col flex-row justify-center items-center gap-4">
+                <button
+                  onClick={handleYoutubeClick}
+                  className="flex items-center justify-center w-10 h-10 bg-red-600 rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-300"
+                >
+                  <FaYoutube className="text-2xl text-white" />
+                </button>
+                <button
+                  onClick={() => setIsOpenDownload(true)}
+                  className="flex items-center justify-center w-10 h-10 bg-blue-600 rounded-full shadow-lg hover:bg-blue-700 transition-colors duration-300"
+                >
+                  <FaDownload className="text-2xl text-white" />
+                </button>
+                <div className="flex items-center justify-center">
+                  {isWatched ? (
+                    <div
+                      className="cursor-pointer text-green-600"
+                      onClick={() => {
+                        const currentDate = new Date();
+                        const dayOfMonth = currentDate.getDate();
+                        const year = currentDate.getFullYear();
+
+                        const formattedDate =
+                          dateBang(
+                            `${dayOfMonth}-${
+                              currentDate.getMonth() + 1
+                            }-${year}`,
+                            ",",
+                            "D M, YYYY"
+                          ) || "";
+
+                        const formattedTime = timeBang(
+                          currentDate.toISOString(),
+                          "detailed"
+                        );
+
+                        // Set the modal message with an additional div
+                        setModalMessage(
+                          <div className="flex flex-col items-center justify-center text-center">
+                            <p>
+                              আমি এই সিনেমাটি দেখেছি {formattedDate}{" "}
+                              {formattedTime}
+                            </p>
+                            <p>আমাকে অনুসরণ করতে পারেনঃ</p>
+                            <div className="flex justify-center space-x-6">
+                              <a
+                                href="https://letterboxd.com/abusayed"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center w-12 h-12 rounded hover:bg-orange-500 transition-colors duration-300"
+                              >
+                                <Image
+                                  src="/lb.svg"
+                                  alt="Letterboxd Logo"
+                                  width={50}
+                                  height={50}
+                                />
+                              </a>
+                              <a
+                                href="https://trakt.tv/users/lrs"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center w-12 h-12 rounded bg-white hover:bg-red-600 transition-colors duration-300"
+                              >
+                                <Image
+                                  src="/trakt.png"
+                                  alt="Trakt.tv Logo"
+                                  width={40}
+                                  height={50}
+                                />
+                              </a>
+                            </div>
+                          </div>
+                        );
+                        setIsOpenStatusModal(true);
+                      }}
+                    >
+                      <Image
+                        src="/tick.png"
+                        alt="Watched"
+                        width={45}
+                        height={45}
+                        priority
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className="cursor-pointer text-red-600"
+                      onClick={() => {
+                        setModalMessage(
+                          <div className="flex flex-col items-center justify-center text-center">
+                            <p>এখনো দেখা হয়নি এই সিনেমাটি। সময় পেলে দেখবো।</p>
+                            <p>আমাকে অনুসরণ করতে পারেনঃ</p>
+                            <div className="flex justify-center space-x-6">
+                              <a
+                                href="https://letterboxd.com/abusayed"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center w-12 h-12 rounded hover:bg-orange-500 transition-colors duration-300"
+                              >
+                                <Image
+                                  src="/lb.svg"
+                                  alt="Letterboxd Logo"
+                                  width={50}
+                                  height={50}
+                                />
+                              </a>
+                              <a
+                                href="https://trakt.tv/users/lrs"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center w-12 h-12 rounded bg-white hover:bg-red-600 transition-colors duration-300"
+                              >
+                                <Image
+                                  src="/trakt.png"
+                                  alt="Trakt.tv Logo"
+                                  width={40}
+                                  height={50}
+                                />
+                              </a>
+                            </div>
+                          </div>
+                        );
+                        setIsOpenStatusModal(true);
+                      }}
+                    >
+                      <Image
+                        src="/cross.png"
+                        alt="Watched"
+                        width={45}
+                        height={45}
+                        priority
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
 
             <div className="flex flex-row md:flex-col justify-center items-center gap-4">
-              <button
-                onClick={handleYoutubeClick}
-                className="flex items-center justify-center w-10 h-10 bg-red-600 rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-300"
-              >
-                <FaYoutube className="text-2xl  text-white" />
-              </button>
-              <button
-                onClick={() => setIsOpenDownload(true)}
-                className="flex items-center justify-center w-10 h-10 bg-blue-600 rounded-full shadow-lg hover:bg-blue-700 transition-colors duration-300"
-              >
-                <FaDownload className="text-2xl text-white" />
-              </button>
               <a
                 href={`https://www.imdb.com/title/${movie.imdb_id}`}
                 target="_blank"
@@ -346,7 +486,11 @@ const MovieDetails: React.FC = () => {
               ))}
             </div>
           </div>
-          <Modal isOpen={isOpenYoutube} onClose={() => setIsOpenYoutube(false)}>
+          <Modal
+            isOpen={isOpenYoutube}
+            onClose={() => setIsOpenYoutube(false)}
+            title="YouTube Videos"
+          >
             <div className="p-3">
               {youtubeVideos.length > 0 ? (
                 <div className="space-y-4">
@@ -387,9 +531,31 @@ const MovieDetails: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <div className="text-lg text-black">
+                <div className="text-lg text-black text-center">
                   কোন ইউটিউব ভিডিও নাই। আপনি চাইলে টিএমডিবি ওয়েবসাইটে ভিডিও লিংক
-                  যুক্ত করতে পারেন।
+                  যুক্ত করতে পারেন{" "}
+                  <a
+                    href={`https://www.themoviedb.org/movie/${movie.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mx-auto mt-2 rounded-lg w-10 h-10 text-green-700 transition-colors duration-300"
+                  >
+                    এখানে
+                  </a>{" "}
+                  ক্লিক করে।
+                  <a
+                    href={`https://www.themoviedb.org/movie/${movie.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center mx-auto mt-2 rounded-lg w-10 h-10 transition-colors duration-300"
+                  >
+                    <Image
+                      src="/tmdb.svg"
+                      alt="TMDB Logo"
+                      width={50}
+                      height={50}
+                    />
+                  </a>
                 </div>
               )}
             </div>
@@ -397,6 +563,7 @@ const MovieDetails: React.FC = () => {
           <Modal
             isOpen={isOpenDownload}
             onClose={() => setIsOpenDownload(false)}
+            title="Download Options"
           >
             <div className="p-4">
               {watchProviders ? (
@@ -442,6 +609,16 @@ const MovieDetails: React.FC = () => {
               )}
             </div>
           </Modal>
+          <Modal
+            isOpen={isOpenStatusModal}
+            onClose={() => setIsOpenStatusModal(false)}
+            title="Watch Status"
+          >
+            <div className="p-4">
+              <p className="text-black">{modalMessage}</p>
+            </div>
+          </Modal>
+
           {/* TMDB attribution */}
           <div className="flex flex-col items-center mt-4">
             <a href="https://www.themoviedb.org/" className="mb-2">
@@ -463,6 +640,7 @@ const MovieDetails: React.FC = () => {
               <a
                 className="text-blue-500 text-xl"
                 href="https://github.com/abusayed0206/banglamovies/"
+                target="_blank"
               >
                 গিটহাব
               </a>
