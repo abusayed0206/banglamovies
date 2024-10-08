@@ -30,7 +30,7 @@ const Navbar = () => {
               className="flex items-center justify-center w-12 h-12 rounded bg-white hover:bg-red-600 transition-colors duration-300"
             >
               <Image
-                src="/trakt.png"
+                src="/trakt.svg"
                 alt="Trakt.tv Logo"
                 width={40}
                 height={50}

@@ -289,7 +289,7 @@ const MovieDetails: React.FC = () => {
                                 className="flex items-center justify-center w-12 h-12 rounded bg-white hover:bg-red-600 transition-colors duration-300"
                               >
                                 <Image
-                                  src="/trakt.png"
+                                  src="/trakt.svg"
                                   alt="Trakt.tv Logo"
                                   width={40}
                                   height={50}
@@ -338,7 +338,7 @@ const MovieDetails: React.FC = () => {
                                 className="flex items-center justify-center w-12 h-12 rounded bg-white hover:bg-red-600 transition-colors duration-300"
                               >
                                 <Image
-                                  src="/trakt.png"
+                                  src="/trakt.svg"
                                   alt="Trakt.tv Logo"
                                   width={40}
                                   height={50}
@@ -651,7 +651,7 @@ const MovieDetails: React.FC = () => {
             <p className="text-oldlace text-center">
               সোর্স কোড:{" "}
               <a
-                className="text-blue-500 text-xl"
+                className="text-oldlace text-xl"
                 href="https://github.com/abusayed0206/banglamovies/"
                 target="_blank"
               >
