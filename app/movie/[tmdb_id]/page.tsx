@@ -209,8 +209,6 @@ const MovieDetails: React.FC = () => {
                 height={450}
                 className="rounded-lg shadow-lg mx-auto"
                 priority={true}
-                layout="responsive"
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
               />
             </div>
 
@@ -219,7 +217,7 @@ const MovieDetails: React.FC = () => {
                 <button
                   onClick={handleYoutubeClick}
                   aria-label="Open YouTube"
-                  className="flex items-center justify-center w-10 h-10 rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-300"
+                  className="flex items-center justify-center w-12 h-12 rounded-lg  hover:bg-red-700 transition-colors duration-300"
                 >
                   <Image
                     src="/yt.svg"
@@ -232,7 +230,7 @@ const MovieDetails: React.FC = () => {
                 <button
                   onClick={() => setIsOpenDownload(true)}
                   aria-label="Download"
-                  className="flex items-center justify-center w-10 h-10  rounded-lg shadow-lg hover:bg-white transition-colors duration-300"
+                  className="flex items-center justify-center w-10 h-10  rounded-lg hover:bg-white transition-colors duration-300"
                 >
                   <Image src="/dl.svg" alt="Download" width={50} height={50} />
                 </button>
@@ -273,7 +271,7 @@ const MovieDetails: React.FC = () => {
                                 href="https://letterboxd.com/abusayed"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center justify-center w-12 h-12 rounded hover:bg-orange-500 transition-colors duration-300"
+                                className="flex items-center justify-center w-12 h-12 rounded-lg hover:bg-orange-500 transition-colors duration-300"
                               >
                                 <Image
                                   src="/lb.svg"
@@ -286,7 +284,7 @@ const MovieDetails: React.FC = () => {
                                 href="https://trakt.tv/users/lrs"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center justify-center w-12 h-12 rounded bg-white hover:bg-red-600 transition-colors duration-300"
+                                className="flex items-center justify-center w-12 h-12 rounded bg-black hover:bg-red-600 transition-colors duration-300"
                               >
                                 <Image
                                   src="/trakt.svg"
@@ -335,7 +333,7 @@ const MovieDetails: React.FC = () => {
                                 href="https://trakt.tv/users/lrs"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center justify-center w-12 h-12 rounded bg-white hover:bg-red-600 transition-colors duration-300"
+                                className="flex items-center justify-center w-12 h-12 rounded bg-black hover:bg-red-600 transition-colors duration-300"
                               >
                                 <Image
                                   src="/trakt.svg"
@@ -353,8 +351,8 @@ const MovieDetails: React.FC = () => {
                       <Image
                         src="/cross.svg"
                         alt="Watched"
-                        width={45}
-                        height={45}
+                        width={35}
+                        height={35}
                         priority
                       />
                     </div>
@@ -368,7 +366,7 @@ const MovieDetails: React.FC = () => {
                 href={`https://www.imdb.com/title/${movie.imdb_id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center w-10 h-10 bg-gray-600 rounded-full shadow-lg hover:bg-gray-700 transition-colors duration-300"
+                className="flex items-center justify-center w-12 h-12 bg-gray-600 rounded-full shadow-lg hover:bg-gray-700 transition-colors duration-300"
               >
                 <Image
                   src="/imdb.png"
@@ -383,16 +381,16 @@ const MovieDetails: React.FC = () => {
                 href={`https://www.themoviedb.org/movie/${movie.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center rounded-lg justify-center w-10 h-10 hover:bg-green-700 transition-colors duration-300"
+                className="flex items-center rounded-lg justify-center w-12 h-12 bg-gray-200 hover:bg-green-700 transition-colors duration-300"
               >
-                <Image src="/tmdb.svg" alt="TMDB Logo" width={50} height={50} />
+                <Image src="/tmdb.svg" alt="TMDB Logo" width={40} height={40} />
               </a>
 
               <a
                 href={`https://letterboxd.com/imdb/${movie.imdb_id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex rounded-lg items-center justify-center w-10 h-10  hover:bg-orange-700 transition-colors duration-300"
+                className="flex items-center justify-center w-12 h-12 rounded bg-black hover:bg-red-600 transition-colors duration-300"
               >
                 <Image
                   src="/lb.svg"
@@ -406,13 +404,13 @@ const MovieDetails: React.FC = () => {
                 href={`https://trakt.tv/movies/${movie.imdb_id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center w-10 h-10"
+                className="flex items-center justify-center w-12 h-12 rounded bg-black hover:bg-red-600 transition-colors duration-300"
               >
                 <Image
                   src="/trakt.svg"
                   alt="Trakt.tv Logo"
-                  width={150}
-                  height={105}
+                  width={40}
+                  height={50}
                 />
               </a>
             </div>
@@ -560,7 +558,7 @@ const MovieDetails: React.FC = () => {
                     href={`https://www.themoviedb.org/movie/${movie.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center mx-auto mt-2 rounded-lg w-10 h-10 transition-colors duration-300"
+                    className="flex items-center justify-center mx-auto mt-2 rounded-lg w-12 h-12 transition-colors bg-gray-200duration-300"
                   >
                     <Image
                       src="/tmdb.svg"

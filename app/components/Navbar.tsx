@@ -27,7 +27,7 @@ const Navbar = () => {
               href="https://trakt.tv/users/lrs"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center w-12 h-12 rounded bg-white hover:bg-red-600 transition-colors duration-300"
+              className="flex items-center justify-center w-12 h-12 rounded bg-black hover:bg-red-600 transition-colors duration-300"
             >
               <Image
                 src="/trakt.svg"
