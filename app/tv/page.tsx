@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useEffect, useState, Suspense } from "react";
-import MovieCard from "./components/MovieCard";
+import TvCard from "@/app/components/TvCard";
 import { useSearchParams, useRouter } from "next/navigation";
 
-interface Movie {
+interface TV {
   id: number;
-  title: string;
+  name: string;
   poster_path: string;
-  release_date: string;
+  first_air_date: string; // Use first_air_date for TV shows
 }
 
 const convertToBengaliDigits = (num: number): string => {
@@ -20,19 +20,19 @@ const convertToBengaliDigits = (num: number): string => {
     .join(""); // Join the mapped digits back together
 };
 
-const fetchMovies = async (page: number) => {
-  const response = await fetch(`/api/discover/movie?page=${page}`);
+const fetchTVShows = async (page: number) => {
+  const response = await fetch(`/api/discover/tv?page=${page}`);
   if (!response.ok) {
-    throw new Error("Failed to fetch movies");
+    throw new Error("Failed to fetch TV shows");
   }
   return response.json();
 };
 
-const MovieList = () => {
+const TvShowList = () => {
   const searchParams = useSearchParams();
   const currentPage = Number(searchParams.get("page")) || 1;
   const [searchQuery, setSearchQuery] = useState("");
-  const [movies, setMovies] = useState<Movie[]>([]);
+  const [tvShows, setTvShows] = useState<TV[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,26 +46,26 @@ const MovieList = () => {
   };
 
   useEffect(() => {
-    const loadMovies = async () => {
+    const loadTVShows = async () => {
       setLoading(true);
       try {
-        const data = await fetchMovies(currentPage);
-        setMovies(data.results);
+        const data = await fetchTVShows(currentPage);
+        setTvShows(data.results);
         setTotalPages(data.total_pages);
         setError(null);
       } catch (err) {
         console.error(err);
-        setError("চলচ্চিত্র লোড করার সময় একটি ত্রুটি ঘটেছে।");
+        setError("টিভি শো লোড করার সময় একটি ত্রুটি ঘটেছে।");
       } finally {
         setLoading(false);
       }
     };
 
-    loadMovies();
+    loadTVShows();
   }, [currentPage]);
 
   const handlePagination = (newPage: number) => {
-    window.location.href = `/?page=${newPage}`;
+    window.location.href = `/tv?page=${newPage}`;
   };
 
   const getPaginationNumbers = () => {
@@ -85,11 +85,7 @@ const MovieList = () => {
   };
 
   if (loading)
-    return (
-      <div className="text-center py-10">
-        চলচ্চিত্রের সংগ্রহশালা লোড হচ্ছে........
-      </div>
-    );
+    return <div className="text-center py-10">টিভি শো লোড হচ্ছে........</div>;
   if (error)
     return <div className="text-center py-10 text-red-500">{error}</div>;
 
@@ -101,7 +97,7 @@ const MovieList = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="খুঁজ দ্য সার্চ"
+            placeholder="খুঁজুন"
             className="px-4 py-2 w-64 text-black rounded-l-lg border-2 border-gray-300 focus:outline-none focus:border-blue-500"
           />
           <button
@@ -113,8 +109,8 @@ const MovieList = () => {
         </form>
       </div>
       <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-4 mx-auto">
-        {movies.map((movie) => (
-          <MovieCard key={movie.id} movie={movie} />
+        {tvShows.map((tv) => (
+          <TvCard key={tv.id} tv={tv} />
         ))}
       </div>
 
@@ -148,7 +144,7 @@ const MovieList = () => {
 const HomePage: React.FC = () => {
   return (
     <Suspense fallback={<div>লোড হচ্ছে ....</div>}>
-      <MovieList />
+      <TvShowList />
     </Suspense>
   );
 };

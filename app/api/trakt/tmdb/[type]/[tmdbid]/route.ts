@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// app/api/trakt/tmdb/route.ts
 import { NextResponse } from "next/server";
 import axios from "axios";
 
@@ -11,21 +10,23 @@ const log = (message: string, data?: any): void => {
   if (data) console.log(data);
 };
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const tmdbid = searchParams.get("tmdbid");
+export async function GET(
+  request: Request,
+  { params }: { params: { type: string; tmdbid: string } }
+) {
+  const { type, tmdbid } = params;
 
-  if (!tmdbid) {
-    log("Missing tmdbid parameter");
+  if (!tmdbid || !["movie", "show"].includes(type)) {
+    log("Invalid parameters");
     return NextResponse.json(
-      { error: "Missing tmdbid parameter." },
+      { error: "Missing or invalid tmdbid/type parameter." },
       { status: 400 }
     );
   }
 
   try {
-    log(`Fetching Trakt ID for TMDb ID: ${tmdbid}`);
-    const traktId = await getTraktIdFromTMDb(tmdbid);
+    log(`Fetching Trakt ID for ${type.toUpperCase()} with TMDb ID: ${tmdbid}`);
+    const traktId = await getTraktIdFromTMDb(tmdbid, type);
 
     if (!traktId) {
       log(`Trakt ID not found for TMDb ID: ${tmdbid}`);
@@ -48,27 +49,30 @@ export async function GET(request: Request) {
 }
 
 // Helper function to convert TMDb ID to Trakt ID
-async function getTraktIdFromTMDb(tmdbid: string): Promise<number | null> {
+async function getTraktIdFromTMDb(
+  tmdbid: string,
+  type: string
+): Promise<number | null> {
   try {
-    const traktApiUrl = `https://api.trakt.tv/search/tmdb/${tmdbid}?type=movie`;
-    log(`Requesting Trakt ID for TMDb ID: ${tmdbid} (URL: ${traktApiUrl})`);
-
-    const response = await axios.get<{ movie: { ids: { trakt: number } } }[]>(
-      traktApiUrl,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "trakt-api-version": "2",
-          "trakt-api-key": TRAKT_CLIENT_ID,
-        },
-      }
+    const traktApiUrl = `https://api.trakt.tv/search/tmdb/${tmdbid}?type=${type}`;
+    log(
+      `Requesting Trakt ID for ${type.toUpperCase()} with TMDb ID: ${tmdbid} (URL: ${traktApiUrl})`
     );
+
+    const response = await axios.get<
+      { [key: string]: { ids: { trakt: number } } }[]
+    >(traktApiUrl, {
+      headers: {
+        "Content-Type": "application/json",
+        "trakt-api-version": "2",
+        "trakt-api-key": TRAKT_CLIENT_ID,
+      },
+    });
 
     log(`Trakt API response for TMDb ID: ${tmdbid}`, response.data);
 
     if (response.data.length > 0) {
-      // Access the trakt ID correctly
-      const traktId = response.data[0].movie.ids.trakt; // Correctly accessing the Trakt ID
+      const traktId = response.data[0][type].ids.trakt; // Handle both movie and show
       return traktId;
     } else {
       return null;

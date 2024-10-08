@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// app/api/trakt/lookup/route.ts
 import { NextResponse } from "next/server";
 import axios from "axios";
 
@@ -12,23 +11,27 @@ const log = (message: string, data?: any): void => {
   if (data) console.log(data);
 };
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const tmdbid = searchParams.get("tmdbid");
+export async function GET(
+  request: Request,
+  { params }: { params: { type: string; tmdbid: string } }
+) {
+  const { type, tmdbid } = params;
 
-  if (!tmdbid) {
-    log("Missing tmdbid parameter");
+  if (!tmdbid || !["movie", "show"].includes(type)) {
+    log("Invalid parameters");
     return NextResponse.json(
-      { error: "Missing tmdbid parameter." },
+      { error: "Missing or invalid tmdbid/type parameter." },
       { status: 400 }
     );
   }
 
   try {
-    log(`Looking up watched status for TMDb ID: ${tmdbid}`);
+    log(
+      `Looking up watched status for ${type.toUpperCase()} with TMDb ID: ${tmdbid}`
+    );
 
     // Step 1: Get the Trakt ID from the first route
-    const traktId = await getTraktId(tmdbid);
+    const traktId = await getTraktId(tmdbid, type);
     if (!traktId) {
       log(`Trakt ID not found for TMDb ID: ${tmdbid}`);
       return NextResponse.json(
@@ -40,34 +43,31 @@ export async function GET(request: Request) {
     log(`Trakt ID found: ${traktId} for TMDb ID: ${tmdbid}`);
 
     // Step 2: Fetch watched history from Trakt and return it as-is
-    const history = await getWatchedHistory(traktId);
+    const history = await getWatchedHistory(traktId, type);
 
     log(`Successfully fetched history for Trakt ID: ${traktId}`);
 
-    // Check if the history array is empty
     if (history.length === 0) {
-      // Return a consistent JSON structure for non-watched movies
       return NextResponse.json([
         {
           id: null,
           watched_at: "none",
           action: "watch",
-          type: "movie",
-          movie: {
+          type: type,
+          [type]: {
             title: "Not Watched",
             year: null,
             ids: {
               trakt: traktId,
               slug: "",
               imdb: "",
-              tmdb: parseInt(tmdbid), // Include the TMDb ID
+              tmdb: parseInt(tmdbid),
             },
           },
         },
       ]);
     }
 
-    // Directly return the raw JSON response from Trakt API
     return NextResponse.json(history);
   } catch (error) {
     const err = error as any;
@@ -79,10 +79,13 @@ export async function GET(request: Request) {
   }
 }
 
-// Helper function to get Trakt ID from the first route
-async function getTraktId(tmdbid: string): Promise<number | null> {
+// Helper function to get Trakt ID
+async function getTraktId(
+  tmdbid: string,
+  type: string
+): Promise<number | null> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/trakt/tmdb?tmdbid=${tmdbid}`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/trakt/tmdb/${type}/${tmdbid}`
   );
   if (!response.ok) {
     throw new Error("Failed to fetch Trakt ID");
@@ -91,10 +94,12 @@ async function getTraktId(tmdbid: string): Promise<number | null> {
   return data.traktId || null;
 }
 
-// Helper function to fetch watched history from Trakt
-async function getWatchedHistory(traktId: number): Promise<any> {
+// Helper function to fetch watched history
+async function getWatchedHistory(traktId: number, type: string): Promise<any> {
   try {
-    const traktApiUrl = `https://api.trakt.tv/sync/history/movies/${traktId}`;
+    const traktApiUrl = `https://api.trakt.tv/sync/history/${
+      type === "movie" ? "movies" : "shows"
+    }/${traktId}`;
     log(`Requesting watched history from Trakt API (URL: ${traktApiUrl})`);
 
     const response = await axios.get(traktApiUrl, {
@@ -107,7 +112,7 @@ async function getWatchedHistory(traktId: number): Promise<any> {
     });
 
     log(`Watched history response for Trakt ID: ${traktId}`, response.data);
-    return response.data; // Return the raw response from Trakt
+    return response.data;
   } catch (error: any) {
     log(
       `Error fetching watched history for Trakt ID: ${traktId}`,

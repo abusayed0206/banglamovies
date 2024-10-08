@@ -8,27 +8,31 @@ import Modal from "../../components/Modal";
 import GalleryModal from "@/app/components/GalleryModal";
 import { numBang, dateBang, timeBang } from "bang-utils";
 
-// Define types for movie details
-interface Movie {
+// Define types for TV details
+interface TVShow {
   id: number;
-  title: string;
+  name: string;
   overview: string;
-  release_date: string;
+  first_air_date: string;
+  episode_run_time: number[];
+  status: string;
   genres: { id: number; name: string }[];
-  runtime: number;
+  number_of_seasons: number;
   poster_path?: string;
   credits: {
     cast: CastMember[];
     crew: CrewMember[];
   };
+  external_ids: { imdb_id: string };
   production_countries: { name: string }[];
-  imdb_id: string;
   videos?: {
     results: Video[];
   };
   images?: {
     posters: { file_path: string }[];
   };
+  seasons: Season[];
+  created_by: { id: number; name: string; profile_path?: string }[];
 }
 
 interface CastMember {
@@ -51,6 +55,14 @@ interface Video {
   site: string;
 }
 
+interface Season {
+  id: number;
+  season_number: number;
+  poster_path: string;
+  air_date: string;
+  episode_count: number;
+}
+
 // Interface for Watch Providers
 interface Provider {
   logo_path: string;
@@ -62,11 +74,11 @@ interface WatchProviderResponse {
   link: string;
 }
 
-// Fetch movie details
-const fetchMovieDetails = async (tmdbId: string): Promise<Movie> => {
-  const response = await fetch(`/api/movie/${tmdbId}`);
+// Fetch TV show details
+const fetchTVShowDetails = async (tmdbId: string): Promise<TVShow> => {
+  const response = await fetch(`/api/tv/${tmdbId}`);
   if (!response.ok) {
-    throw new Error("Failed to fetch movie details");
+    throw new Error("Failed to fetch TV show details");
   }
   return response.json();
 };
@@ -75,7 +87,7 @@ const fetchMovieDetails = async (tmdbId: string): Promise<Movie> => {
 const fetchWatchProviders = async (
   tmdbId: string
 ): Promise<WatchProviderResponse | null> => {
-  const response = await fetch(`/api/watch/provider/movie/${tmdbId}`);
+  const response = await fetch(`/api/watch/provider/tv/${tmdbId}`);
   if (!response.ok) {
     console.error("Failed to fetch watch providers");
     return null;
@@ -89,10 +101,18 @@ const fetchWatchProviders = async (
   }
   return null;
 };
+const statusTranslations: { [key: string]: string } = {
+  "Returning Series": "ফিরতি সিরিজ",
+  Planned: "পরিকল্পিত",
+  "In Production": "বানানো চলমান",
+  Ended: "শেষ হয়েছে",
+  Canceled: "বাতিল হয়েছে",
+  Pilot: "পাইলট পর্ব",
+};
 
-const MovieDetails: React.FC = () => {
+const TVDetails: React.FC = () => {
   const { tmdb_id } = useParams();
-  const [movie, setMovie] = useState<Movie | null>(null);
+  const [tvShow, setTVShow] = useState<TVShow | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isOpenYoutube, setIsOpenYoutube] = useState(false);
@@ -105,33 +125,33 @@ const MovieDetails: React.FC = () => {
 
   useEffect(() => {
     if (tmdb_id) {
-      const loadMovieDetails = async () => {
+      const loadTVShowDetails = async () => {
         setLoading(true);
         try {
-          const data = await fetchMovieDetails(tmdb_id as string);
-          setMovie(data);
+          const data = await fetchTVShowDetails(tmdb_id as string);
+          setTVShow(data);
           setError(null);
         } catch (err) {
           console.error(err);
-          setError("An error occurred while fetching movie details.");
+          setError("An error occurred while fetching TV show details.");
         } finally {
           setLoading(false);
         }
       };
 
-      loadMovieDetails();
+      loadTVShowDetails();
     }
   }, [tmdb_id]);
 
   const [isWatched, setIsWatched] = useState<boolean | null>(null);
-  const [watchedAt, setWatchedAt] = useState<string | null>(null); // Add state for watched_at
-
   const [modalMessage, setModalMessage] = useState<React.ReactNode>(null);
+  const [watchedAt, setWatchedAt] = useState<string | null>(null);
   const [isOpenStatusModal, setIsOpenStatusModal] = useState<boolean>(false);
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
 
+  // Function to check if the movie is watched
   const checkIfWatched = async (tmdbId: string) => {
-    const response = await fetch(`/api/trakt/lookup/movie/${tmdbId}`);
+    const response = await fetch(`/api/trakt/lookup/show/${tmdbId}`);
     if (!response.ok) {
       console.error("Failed to fetch watched status");
       return;
@@ -184,30 +204,26 @@ const MovieDetails: React.FC = () => {
   if (loading) return <div className="text-center py-10">লোড হচ্ছে......</div>;
   if (error)
     return <div className="text-center py-10 text-red-500">{error}</div>;
-  if (!movie) return null;
+  if (!tvShow) return null;
 
-  const posterUrl = movie.poster_path
-    ? `https://image.tmdb.org/t/p/original${movie.poster_path}`
+  const posterUrl = tvShow.poster_path
+    ? `https://image.tmdb.org/t/p/original${tvShow.poster_path}`
     : "/sayed.jpg";
-  const topCrew =
-    movie.credits?.crew?.filter(
-      (person) => person.job === "Director" || person.job === "Writer"
-    ) || [];
-  const cast = movie.credits?.cast || [];
-  const releaseYear = movie.release_date
-    ? new Date(movie.release_date).getFullYear()
+  const topCreators = tvShow.created_by || [];
+  const cast = tvShow.credits?.cast.slice(0, 10) || [];
+  const firstAirYear = tvShow.first_air_date
+    ? new Date(tvShow.first_air_date).getFullYear()
     : "";
-  const releaseYearBengali = numBang((releaseYear || 0).toString());
-  const runtimeBengali = numBang(movie.runtime.toString());
+  const firstAirYearBengali = numBang((firstAirYear || 0).toString());
 
-  const productionCountries = movie.production_countries.map((country) => {
+  const productionCountries = tvShow.production_countries.map((country) => {
     if (country.name === "Bangladesh") return "বাংলাদেশ";
     if (country.name === "India") return "ভারত";
     return country.name;
   });
 
   const youtubeVideos =
-    movie.videos?.results?.filter((video) => video.site === "YouTube") || [];
+    tvShow.videos?.results?.filter((video) => video.site === "YouTube") || [];
 
   const handleYoutubeClick = () => {
     setIsOpenYoutube(true);
@@ -218,6 +234,8 @@ const MovieDetails: React.FC = () => {
     }
   };
 
+  const banglaStatus = statusTranslations[tvShow.status] || tvShow.status;
+
   return (
     <div className="justify-center container mx-auto px-4">
       <div className="min-h-screen flex flex-col">
@@ -226,7 +244,7 @@ const MovieDetails: React.FC = () => {
             <div className="relative w-full md:w-1/2 lg:w-1/3">
               <Image
                 src={posterUrl}
-                alt={`${movie.title} পোস্টার`}
+                alt={`${tvShow.name} পোস্টার`}
                 width={300}
                 height={450}
                 className="rounded-lg shadow-lg mx-auto"
@@ -390,7 +408,7 @@ const MovieDetails: React.FC = () => {
 
             <div className="flex flex-row md:flex-col justify-center items-center gap-4">
               <a
-                href={`https://www.imdb.com/title/${movie.imdb_id}`}
+                href={`https://www.imdb.com/title/${tvShow.external_ids.imdb_id}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center w-12 h-12 bg-gray-600 rounded-full shadow-lg hover:bg-gray-700 transition-colors duration-300"
@@ -405,7 +423,7 @@ const MovieDetails: React.FC = () => {
               </a>
 
               <a
-                href={`https://www.themoviedb.org/movie/${movie.id}`}
+                href={`https://www.themoviedb.org/tv/${tvShow.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center rounded-lg justify-center w-12 h-12 bg-gray-200 hover:bg-green-700 transition-colors duration-300"
@@ -414,21 +432,7 @@ const MovieDetails: React.FC = () => {
               </a>
 
               <a
-                href={`https://letterboxd.com/imdb/${movie.imdb_id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center w-12 h-12 rounded bg-black hover:bg-red-600 transition-colors duration-300"
-              >
-                <Image
-                  src="/lb.svg"
-                  alt="Letterboxd Logo"
-                  width={50}
-                  height={50}
-                />
-              </a>
-
-              <a
-                href={`https://trakt.tv/movies/${movie.imdb_id}`}
+                href={`https://trakt.tv/shows/${tvShow.external_ids.imdb_id}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center w-12 h-12 rounded bg-black hover:bg-red-600 transition-colors duration-300"
@@ -442,64 +446,105 @@ const MovieDetails: React.FC = () => {
               </a>
             </div>
           </div>
+
           <h1 className="text-4xl font-bold mb-4 mt-8">
-            {movie.title}{" "}
-            <span className="text-lg font-normal">({releaseYearBengali})</span>
+            {tvShow.name}{" "}
+            <span className="text-lg font-normal">({firstAirYearBengali})</span>
           </h1>
-          <div className="mt-6 text-lg">
+
+          <div className="mt-4 text-lg">
             <p>
-              <strong>সংক্ষিপ্ত বিবরণ:</strong>
+              <strong>সংক্ষিপ্ত বিবরণ:</strong>{" "}
+              {tvShow.overview || "বর্ণনা উপলভ্য নেই।"}
             </p>
-            <p>{movie.overview || "বর্ণনা উপলভ্য নেই।"}</p>
           </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
             <p>
-              <strong>মুক্তির বছর:</strong> {releaseYearBengali}
+              <strong>প্রথম সম্প্রচার:</strong> {firstAirYearBengali}
             </p>
             <p>
               <strong>শ্রেণী:</strong>{" "}
-              {movie.genres.map((genre) => genre.name).join(", ")}
+              {tvShow.genres.map((genre) => genre.name).join(", ")}
             </p>
             <p>
-              <strong>সময়কাল:</strong> {runtimeBengali} মিনিট
+              <strong>বর্তমান অবস্থা:</strong> {banglaStatus}
             </p>
+            <p>
+              <strong>প্রতি পর্ব প্রচারকালঃ </strong>{" "}
+              {numBang(tvShow.episode_run_time[0]?.toString() || "")} মিনিট
+            </p>
+            <p>
+              <strong>সিজন সংখ্যা:</strong>{" "}
+              {numBang(tvShow.number_of_seasons.toString())}
+            </p>
+
             <p>
               <strong>দেশ:</strong> {productionCountries.join(", ")}
             </p>
           </div>
+          {/* Seasons Section */}
+          <div className="overflow-x-auto overflow-visible mt-4 mb-8">
+            <h2 className="text-xl font-semibold">সিজন সমূহ</h2>
+            <div className="flex gap-4 mt-2">
+              {tvShow.seasons.map((season) => (
+                <Link
+                  href={`/tv/${tmdb_id}/season/${season.season_number}`}
+                  key={season.id}
+                  className="min-w-[150px] text-center"
+                >
+                  <Image
+                    src={
+                      season.poster_path
+                        ? `https://image.tmdb.org/t/p/w200${season.poster_path}`
+                        : "/sayed.jpg"
+                    }
+                    alt={`Season ${season.season_number}`}
+                    width={150}
+                    height={225}
+                    className="rounded-lg shadow-md"
+                  />
+                  <p className="mt-2">
+                    সিজন {numBang(season.season_number.toString())}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    মোট পর্ব: {numBang(season.episode_count.toString())} টি
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
           <div className="mt-8">
-            <h2 className="text-2xl font-semibold">পরিচালক ও লেখকগণ</h2>
+            <h2 className="text-2xl font-semibold">পরিচালক</h2>
             <div className="flex flex-wrap justify-center gap-6 mt-4">
-              {topCrew.map((crew) => (
-                <div key={crew.id} className="flex flex-col items-center">
+              {topCreators.map((creator) => (
+                <div key={creator.id} className="flex flex-col items-center">
                   <a
-                    href={`https://www.themoviedb.org/person/${crew.id}`}
+                    href={`https://www.themoviedb.org/person/${creator.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     <Image
                       src={
-                        crew.profile_path
-                          ? `https://image.tmdb.org/t/p/w200${crew.profile_path}`
+                        creator.profile_path
+                          ? `https://image.tmdb.org/t/p/w200${creator.profile_path}`
                           : "/sayed.jpg"
                       }
-                      alt={`${crew.name} এর ছবি`}
+                      alt={`${creator.name} এর ছবি`}
                       width={100}
                       height={150}
                       className="rounded-lg shadow-md"
                     />
-                    <p className="text-center mt-2">{crew.name}</p>
-                    <p className="text-sm text-oldlace">{crew.job}</p>{" "}
+                    <p className="text-center mt-2">{creator.name}</p>
                   </a>
                 </div>
               ))}
             </div>
 
-            <h2 className="text-2xl font-semibold mt-8">
-              উল্লেখযোগ্য অভিনেতা ও অভিনেত্রী
-            </h2>
+            {/* Cast Section */}
+            <h2 className="text-2xl font-semibold mt-8">অভিনেতা ও অভিনেত্রী</h2>
             <div className="flex flex-wrap justify-center gap-6 mt-4">
-              {cast.slice(0, 5).map((actor) => (
+              {cast.map((actor) => (
                 <div key={actor.id} className="flex flex-col items-center">
                   <a
                     href={`https://www.themoviedb.org/person/${actor.id}`}
@@ -517,158 +562,165 @@ const MovieDetails: React.FC = () => {
                       height={150}
                       className="rounded-lg shadow-md"
                     />
-
                     <p className="text-center mt-2">{actor.name}</p>
                   </a>
                 </div>
               ))}
             </div>
-          </div>
-          <Modal
-            isOpen={isOpenYoutube}
-            onClose={() => setIsOpenYoutube(false)}
-            title="YouTube Videos"
-          >
-            <div className="p-3">
-              {youtubeVideos.length > 0 ? (
-                <div className="space-y-4">
-                  {selectedVideo && (
-                    <div className="flex flex-col items-center">
-                      <iframe
-                        className="w-full aspect-video border-2 border-gray-300 rounded-lg"
-                        src={`https://www.youtube.com/embed/${selectedVideo.key}?autoplay=1&mute=1&controls=1`}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      ></iframe>
 
-                      <Link
-                        href={`https://www.youtube.com/watch?v=${selectedVideo.key}`}
-                        target="_blank"
-                      >
-                        <h4 className="text-base text-black font-semibold mb-2 mt-2">
-                          {selectedVideo.name}
-                        </h4>
-                      </Link>
+            {/* YouTube Videos Modal */}
+            <Modal
+              isOpen={isOpenYoutube}
+              onClose={() => setIsOpenYoutube(false)}
+              title="YouTube Videos"
+            >
+              <div className="p-3">
+                {youtubeVideos.length > 0 ? (
+                  <div className="space-y-4">
+                    {selectedVideo && (
+                      <div className="flex flex-col items-center">
+                        <iframe
+                          className="w-full aspect-video border-2 border-gray-300 rounded-lg"
+                          src={`https://www.youtube.com/embed/${selectedVideo.key}?autoplay=1&mute=1&controls=1`}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        ></iframe>
+
+                        <Link
+                          href={`https://www.youtube.com/watch?v=${selectedVideo.key}`}
+                          target="_blank"
+                        >
+                          <h4 className="text-base text-black font-semibold mb-2 mt-2">
+                            {selectedVideo.name}
+                          </h4>
+                        </Link>
+                      </div>
+                    )}
+
+                    <div className="flex justify-center mb-2 overflow-x-auto">
+                      {youtubeVideos.map((video) => (
+                        <button
+                          key={video.key}
+                          onClick={() => setSelectedVideo(video)}
+                          className={`px-3 py-1 rounded mx-2 ${
+                            selectedVideo?.key === video.key
+                              ? "bg-red-600 text-white"
+                              : "bg-gray-200 text-gray-800"
+                          }`}
+                        >
+                          {video.type}
+                        </button>
+                      ))}
                     </div>
-                  )}
-
-                  <div className="flex justify-center mb-2 overflow-x-auto">
-                    {youtubeVideos.map((video) => (
-                      <button
-                        key={video.key}
-                        onClick={() => setSelectedVideo(video)}
-                        className={`px-3 py-1 rounded mx-2 ${
-                          selectedVideo?.key === video.key
-                            ? "bg-red-600 text-white"
-                            : "bg-gray-200 text-gray-800"
-                        }`}
-                      >
-                        {video.type}
-                      </button>
-                    ))}
                   </div>
-                </div>
-              ) : (
-                <div className="text-lg text-black text-center">
-                  কোন ইউটিউব ভিডিও নাই। আপনি চাইলে টিএমডিবি ওয়েবসাইটে ভিডিও লিংক
-                  যুক্ত করতে পারেন{" "}
-                  <a
-                    href={`https://www.themoviedb.org/movie/${movie.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mx-auto mt-2 rounded-lg w-10 h-10 text-green-700 transition-colors duration-300"
-                  >
-                    এখানে
-                  </a>{" "}
-                  ক্লিক করে।
-                  <a
-                    href={`https://www.themoviedb.org/movie/${movie.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center mx-auto mt-2 rounded-lg w-12 h-12 transition-colors bg-gray-200duration-300"
-                  >
-                    <Image
-                      src="/tmdb.svg"
-                      alt="TMDB Logo"
-                      width={50}
-                      height={50}
-                    />
-                  </a>
-                </div>
-              )}
-            </div>
-          </Modal>
-          <Modal
-            isOpen={isOpenDownload}
-            onClose={() => setIsOpenDownload(false)}
-            title="Download Options"
-          >
-            <div className="p-4">
-              {watchProviders ? (
-                <div className="flex flex-col items-center">
-                  <h2 className="text-xl text-black font-bold mb-4 text-center">
-                    এখানে স্ট্রিম করুনঃ
-                  </h2>
-                  <div className="flex flex-wrap justify-center mb-4">
-                    {watchProviders.flatrate.map((provider, index) => (
-                      <a
-                        key={index}
-                        href={watchProviders.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="m-2 rounded-lg overflow-hidden" // Add rounded-lg and overflow-hidden
-                      >
-                        <Image
-                          src={`https://image.tmdb.org/t/p/w200${provider.logo_path}`}
-                          alt={provider.provider_name}
-                          width={48}
-                          height={48}
-                          className="h-12 w-12 object-contain rounded-lg" // Optional: add rounded-lg here too
-                        />
-                      </a>
-                    ))}
+                ) : (
+                  <div className="text-lg text-black text-center">
+                    কোন ইউটিউব ভিডিও নাই। আপনি চাইলে টিএমডিবি ওয়েবসাইটে ভিডিও
+                    লিংক যুক্ত করতে পারেন{" "}
+                    <a
+                      href={`https://www.themoviedb.org/tv/${tvShow.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mx-auto mt-2 rounded-lg w-10 h-10 text-green-700 transition-colors duration-300"
+                    >
+                      এখানে
+                    </a>{" "}
+                    ক্লিক করে।
+                    <a
+                      href={`https://www.themoviedb.org/tv/${tvShow.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center mx-auto mt-2 rounded-lg w-12 h-12 transition-colors bg-gray-200duration-300"
+                    >
+                      <Image
+                        src="/tmdb.svg"
+                        alt="TMDB Logo"
+                        width={50}
+                        height={50}
+                      />
+                    </a>
                   </div>
+                )}
+              </div>
+            </Modal>
 
-                  <p className="text-xs mt-4 flex text-black items-center justify-center">
-                    স্ট্রিমিং লিংক সংগ্রহে সহযোগিতায়
-                    <Image
-                      src="/jw.png"
-                      alt="JustWatch"
-                      width={16}
-                      height={16}
-                      className="ml-2"
-                    />
+            {/* Watch Providers Modal */}
+            <Modal
+              isOpen={isOpenDownload}
+              onClose={() => setIsOpenDownload(false)}
+              title="Download Options"
+            >
+              <div className="p-4">
+                {watchProviders ? (
+                  <div className="flex flex-col items-center">
+                    <h2 className="text-xl text-black font-bold mb-4 text-center">
+                      এখানে স্ট্রিম করুনঃ
+                    </h2>
+                    <div className="flex flex-wrap justify-center mb-4">
+                      {watchProviders.flatrate.map((provider, index) => (
+                        <a
+                          key={index}
+                          href={watchProviders.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="m-2 rounded-lg overflow-hidden"
+                        >
+                          <Image
+                            src={`https://image.tmdb.org/t/p/w200${provider.logo_path}`}
+                            alt={provider.provider_name}
+                            width={48}
+                            height={48}
+                            className="h-12 w-12 object-contain rounded-lg"
+                          />
+                        </a>
+                      ))}
+                    </div>
+
+                    <p className="text-xs mt-4 flex text-black items-center justify-center">
+                      স্ট্রিমিং লিংক সংগ্রহে সহযোগিতায়
+                      <Image
+                        src="/jw.png"
+                        alt="JustWatch"
+                        width={16}
+                        height={16}
+                        className="ml-2"
+                      />
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-black">
+                    কোন স্ট্রিমিং পরিষেবা পাওয়া যায়নি।
                   </p>
-                </div>
-              ) : (
-                <p className="text-black">
-                  কোন স্ট্রিমিং পরিষেবা পাওয়া যায়নি।
-                </p>
-              )}
-            </div>
-          </Modal>
-          <Modal
-            isOpen={isOpenStatusModal}
-            onClose={() => setIsOpenStatusModal(false)}
-            title="Watch Status"
-          >
-            <div className="p-4">
-              <p className="text-black">{modalMessage}</p>
-            </div>
-          </Modal>
-          <GalleryModal
-            isOpen={isGalleryModalOpen}
-            onClose={() => setIsGalleryModalOpen(false)}
-            posters={movie.images?.posters}
-          >
-            <div className="p-4">
-              <p className="text-black">এখানে ছবির গ্যালারি থাকবে।</p>
-            </div>
-          </GalleryModal>
+                )}
+              </div>
+            </Modal>
+
+            {/* Watch Status Modal */}
+            <Modal
+              isOpen={isOpenStatusModal}
+              onClose={() => setIsOpenStatusModal(false)}
+              title="Watch Status"
+            >
+              <div className="p-4">
+                <p className="text-black">{modalMessage}</p>
+              </div>
+            </Modal>
+
+            {/* Gallery Modal */}
+            <GalleryModal
+              isOpen={isGalleryModalOpen}
+              onClose={() => setIsGalleryModalOpen(false)}
+              posters={tvShow.images?.posters}
+            >
+              <div className="p-4">
+                <p className="text-black">এখানে ছবির গ্যালারি থাকবে।</p>
+              </div>
+            </GalleryModal>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default MovieDetails;
+export default TVDetails;
