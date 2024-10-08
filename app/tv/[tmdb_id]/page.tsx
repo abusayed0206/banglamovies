@@ -306,7 +306,7 @@ const TVDetails: React.FC = () => {
                           setModalMessage(
                             <div className="flex flex-col items-center justify-center text-center">
                               <p>
-                                আমি এই সিনেমাটি দেখেছি {formattedDate}{" "}
+                                আমি এই সিরিজটি দেখেছি {formattedDate}{" "}
                                 {formattedTime}
                               </p>
                               <p>আমাকে অনুসরণ করতে পারেনঃ</p>
@@ -358,7 +358,7 @@ const TVDetails: React.FC = () => {
                       onClick={() => {
                         setModalMessage(
                           <div className="flex flex-col items-center justify-center text-center">
-                            <p>এখনো দেখা হয়নি এই সিনেমাটি। সময় পেলে দেখবো।</p>
+                            <p>এখনো দেখা হয়নি এই সিরিজটি।  সময় পেলে দেখবো।</p>
                             <p>আমাকে অনুসরণ করতে পারেনঃ</p>
                             <div className="flex justify-center space-x-6">
                               <a
@@ -483,38 +483,43 @@ const TVDetails: React.FC = () => {
               <strong>দেশ:</strong> {productionCountries.join(", ")}
             </p>
           </div>
-          {/* Seasons Section */}
-          <div className="overflow-x-auto overflow-visible mt-4 mb-8">
-            <h2 className="text-xl font-semibold">সিজন সমূহ</h2>
-            <div className="flex gap-4 mt-2">
-              {tvShow.seasons.map((season) => (
-                <Link
-                  href={`/tv/${tmdb_id}/season/${season.season_number}`}
-                  key={season.id}
-                  className="min-w-[150px] text-center"
-                >
-                  <Image
-                    src={
-                      season.poster_path
-                        ? `https://image.tmdb.org/t/p/w200${season.poster_path}`
-                        : "/sayed.jpg"
-                    }
-                    alt={`Season ${season.season_number}`}
-                    width={150}
-                    height={225}
-                    className="rounded-lg shadow-md"
-                  />
-                  <p className="mt-2">
-                    সিজন {numBang(season.season_number.toString())}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    মোট পর্ব: {numBang(season.episode_count.toString())} টি
-                  </p>
-                </Link>
-              ))}
-            </div>
-          </div>
+
           <div className="mt-8">
+            {/* Seasons Section */}
+            {/* Seasons Section */}
+            <div className="overflow-x-auto overflow-visible mt-4 mb-8">
+              <h2 className="text-xl font-semibold">সিজন সমূহ</h2>
+              <div className="flex gap-4 mt-2 justify-center items-center">
+                {" "}
+                {/* Added justify-center and items-center */}
+                {tvShow.seasons.map((season) => (
+                  <Link
+                    href={`https://www.themoviedb.org/tv/${tvShow.id}`}
+                    key={season.id}
+                    className="min-w-[150px] text-center"
+                  >
+                    <Image
+                      src={
+                        season.poster_path
+                          ? `https://image.tmdb.org/t/p/w200${season.poster_path}`
+                          : "/sayed.jpg"
+                      }
+                      alt={`Season ${season.season_number}`}
+                      width={150}
+                      height={225}
+                      className="rounded-lg shadow-md"
+                    />
+                    <p className="mt-2">
+                      সিজন {numBang(season.season_number.toString())}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      মোট পর্ব: {numBang(season.episode_count.toString())} টি
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
             <h2 className="text-2xl font-semibold">পরিচালক</h2>
             <div className="flex flex-wrap justify-center gap-6 mt-4">
               {topCreators.map((creator) => (

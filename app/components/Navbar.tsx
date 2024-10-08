@@ -47,10 +47,15 @@ const Navbar = () => {
           </div>
 
           {/* Main button (on large screens it will appear on the left) */}
-          <div className="flex justify-center lg:justify-end">
+          <div className="flex justify-center lg:justify-end space-x-4">
             <Link href="/" passHref>
               <button className="bg-[#dbe918] text-black font-bold py-2 px-6 rounded-xl shadow-lg hover:bg-[#1ed760] transition-colors duration-300 text-2xl">
-                বাংলা চলচ্চিত্রের সংগ্রহশালা
+                মুভি
+              </button>
+            </Link>
+            <Link href="/tv" passHref>
+              <button className="bg-[#dbe918] text-black font-bold py-2 px-6 rounded-xl shadow-lg hover:bg-[#1ed760] transition-colors duration-300 text-2xl">
+                সিরিজ
               </button>
             </Link>
           </div>
