@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import Modal from "../../components/Modal";
-import Navbar from "@/app/components/Navbar";
+import GalleryModal from "@/app/components/GalleryModal";
 import { numBang, dateBang, timeBang } from "bang-utils";
 
 // Define types for movie details
@@ -25,6 +25,9 @@ interface Movie {
   imdb_id: string;
   videos?: {
     results: Video[];
+  };
+  images?: {
+    posters: { file_path: string }[];
   };
 }
 
@@ -123,6 +126,7 @@ const MovieDetails: React.FC = () => {
   const [isWatched, setIsWatched] = useState<boolean | null>(null);
   const [modalMessage, setModalMessage] = useState<React.ReactNode>(null);
   const [isOpenStatusModal, setIsOpenStatusModal] = useState<boolean>(false);
+  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
 
   // Function to check if the movie is watched
   const checkIfWatched = async (tmdbId: string) => {
@@ -198,7 +202,6 @@ const MovieDetails: React.FC = () => {
   return (
     <div className="justify-center container mx-auto px-4">
       <div className="min-h-screen flex flex-col">
-        <Navbar />
         <div className="p-6 text-center">
           <div className="flex flex-col md:flex-row justify-center items-center gap-6">
             <div className="relative w-full md:w-1/2 lg:w-1/3">
@@ -214,6 +217,15 @@ const MovieDetails: React.FC = () => {
 
             <div className="flex flex-col items-center gap-4">
               <div className="flex md:flex-col flex-row justify-center items-center gap-4">
+                <button onClick={() => setIsGalleryModalOpen(true)}>
+                  <Image
+                    src="/gallery.svg"
+                    alt="YouTube Logo"
+                    width={50}
+                    height={50}
+                  />
+                </button>
+
                 <button
                   onClick={handleYoutubeClick}
                   aria-label="Open YouTube"
@@ -629,35 +641,17 @@ const MovieDetails: React.FC = () => {
               <p className="text-black">{modalMessage}</p>
             </div>
           </Modal>
+          <GalleryModal
+            isOpen={isGalleryModalOpen}
+            onClose={() => setIsGalleryModalOpen(false)}
+            posters={movie.images?.posters}
+          >
+            <div className="p-4">
+              <p className="text-black">এখানে ছবির গ্যালারি থাকবে।</p>
+            </div>
+          </GalleryModal>
 
-          {/* TMDB attribution */}
-          <div className="flex flex-col items-center mt-4">
-            <a href="https://www.themoviedb.org/" className="mb-2">
-              <Image
-                src="/tmdb.svg"
-                alt="TMDB Logo"
-                width={100}
-                height={100}
-                className="shadow-md"
-              />
-            </a>
-            <p className="text-oldlace text-center">
-              কৃতজ্ঞতা স্বীকারঃ এই ওয়েবসাইটটি TMDB API ব্যবহার করে কিন্তু TMDB
-              দ্বারা এন্ডোর্স বা সার্টিফাইড না! সব ধরনের তথ্য TMDB থেকে নেয়া
-              হয়েছে।
-            </p>
-            <p className="text-oldlace text-center">
-              সোর্স কোড:{" "}
-              <a
-                className="text-oldlace text-xl"
-                href="https://github.com/abusayed0206/banglamovies/"
-                target="_blank"
-              >
-                গিটহাব
-              </a>
-              <br />
-            </p>
-          </div>
+          
         </div>
       </div>
     </div>

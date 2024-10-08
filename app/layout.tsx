@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { Tiro_Bangla } from "next/font/google";
 import "./globals.css";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
 const inter = Tiro_Bangla({
   weight: "400",
   subsets: ["latin"],
   display: "swap",
 });
-
 
 export const metadata: Metadata = {
   title: "বাংলা চলচ্চিত্র",
@@ -36,7 +37,6 @@ export const metadata: Metadata = {
       sizes: "192x192",
       url: "/android-chrome-192x192.png",
     },
-
     {
       rel: "safari-pinned-tab",
       sizes: "180x180",
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     },
   ],
   openGraph: {
-    images: '/og.jpg',
+    images: "/og.jpg",
   },
 };
 
@@ -55,10 +55,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={inter.className}
-      >
-        {children}
+      <body className={inter.className}>
+        <Navbar />
+        <main>{children}</main>
+        <Footer />
       </body>
     </html>
   );
