@@ -6,14 +6,14 @@ interface Poster {
   file_path: string;
 }
 
-interface GalleryModalProps {  
+interface GalleryModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
   posters?: Poster[];
 }
 
-const GalleryModal: React.FC<GalleryModalProps> = ({ 
+const GalleryModal: React.FC<GalleryModalProps> = ({
   isOpen,
   onClose,
   children,
@@ -23,7 +23,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({
 
   useEffect(() => {
     if (posters && posters.length > 0) {
-      setCurrentIndex(0); 
+      setCurrentIndex(0);
     }
   }, [posters]);
 
@@ -52,7 +52,8 @@ const GalleryModal: React.FC<GalleryModalProps> = ({
       className="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex justify-center items-center"
       onClick={handleBackgroundClick}
     >
-      <div className="relative bg-white dark:bg-gray-800 w-[450px] rounded-[10px] overflow-hidden">
+      <div className="relative bg-white dark:bg-gray-800 w-full max-w-[330px] rounded-[10px] overflow-hidden px-2 sm:px-0">
+        {" "}
         {posters ? (
           <div>
             {posters.length > 0 && (
@@ -60,8 +61,8 @@ const GalleryModal: React.FC<GalleryModalProps> = ({
                 <Image
                   src={`https://image.tmdb.org/t/p/w500${posters[currentIndex].file_path}`}
                   alt="মুভির পোস্টার"
-                  width={450}
-                  height={675}
+                  width={330}
+                  height={500}
                   className="rounded-[10px]"
                 />
                 <a
@@ -96,4 +97,4 @@ const GalleryModal: React.FC<GalleryModalProps> = ({
   );
 };
 
-export default GalleryModal; 
+export default GalleryModal;
