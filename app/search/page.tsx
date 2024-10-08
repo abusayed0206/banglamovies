@@ -2,7 +2,6 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SearchResults } from "../components/SearchResults";
-import Navbar from "../components/Navbar";
 
 interface SearchFormProps {
   initialQuery: string;
@@ -79,7 +78,6 @@ function SearchContent() {
 export default function SearchPage() {
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
       <Suspense fallback={<div>Loading...</div>}>
         <SearchContent />
       </Suspense>
