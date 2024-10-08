@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
-import { FaYoutube, FaDownload } from "react-icons/fa";
 import Link from "next/link";
 import Modal from "../../components/Modal";
 import Navbar from "@/app/components/Navbar";
@@ -205,26 +204,39 @@ const MovieDetails: React.FC = () => {
             <div className="relative w-full md:w-1/2 lg:w-1/3">
               <Image
                 src={posterUrl}
-                alt={`${movie.title} poster`}
+                alt={`${movie.title} পোস্টার`}
                 width={300}
                 height={450}
                 className="rounded-lg shadow-lg mx-auto"
+                priority={true}
+                layout="responsive"
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
               />
             </div>
+
             <div className="flex flex-col items-center gap-4">
               <div className="flex md:flex-col flex-row justify-center items-center gap-4">
                 <button
                   onClick={handleYoutubeClick}
-                  className="flex items-center justify-center w-10 h-10 bg-red-600 rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-300"
+                  aria-label="Open YouTube"
+                  className="flex items-center justify-center w-10 h-10 rounded-lg shadow-lg hover:bg-red-700 transition-colors duration-300"
                 >
-                  <FaYoutube className="text-2xl text-white" />
+                  <Image
+                    src="/yt.svg"
+                    alt="YouTube Logo"
+                    width={50}
+                    height={50}
+                  />
                 </button>
+
                 <button
                   onClick={() => setIsOpenDownload(true)}
-                  className="flex items-center justify-center w-10 h-10 bg-blue-600 rounded-full shadow-lg hover:bg-blue-700 transition-colors duration-300"
+                  aria-label="Download"
+                  className="flex items-center justify-center w-10 h-10  rounded-lg shadow-lg hover:bg-white transition-colors duration-300"
                 >
-                  <FaDownload className="text-2xl text-white" />
+                  <Image src="/dl.svg" alt="Download" width={50} height={50} />
                 </button>
+
                 <div className="flex items-center justify-center">
                   {isWatched ? (
                     <div
@@ -290,7 +302,7 @@ const MovieDetails: React.FC = () => {
                       }}
                     >
                       <Image
-                        src="/tick.png"
+                        src="/ok.svg"
                         alt="Watched"
                         width={45}
                         height={45}
@@ -339,7 +351,7 @@ const MovieDetails: React.FC = () => {
                       }}
                     >
                       <Image
-                        src="/cross.png"
+                        src="/cross.svg"
                         alt="Watched"
                         width={45}
                         height={45}
@@ -394,13 +406,13 @@ const MovieDetails: React.FC = () => {
                 href={`https://trakt.tv/movies/${movie.imdb_id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center rounded-sm justify-center bg-white rounded- w-10 h-10  hover:bg-orange-700 transition-colors duration-300"
+                className="flex items-center justify-center w-10 h-10"
               >
                 <Image
-                  src="/trakt.png"
+                  src="/trakt.svg"
                   alt="Trakt.tv Logo"
-                  width={100}
-                  height={100}
+                  width={150}
+                  height={105}
                 />
               </a>
             </div>
@@ -446,13 +458,13 @@ const MovieDetails: React.FC = () => {
                           ? `https://image.tmdb.org/t/p/w200${crew.profile_path}`
                           : "/sayed.jpg"
                       }
-                      alt={crew.name}
+                      alt={`${crew.name} এর ছবি`}
                       width={100}
                       height={150}
                       className="rounded-lg shadow-md"
                     />
                     <p className="text-center mt-2">{crew.name}</p>
-                    <p className="text-sm text-gray-400">{crew.job}</p>
+                    <p className="text-sm text-oldlace">{crew.job}</p>{" "}
                   </a>
                 </div>
               ))}
@@ -475,11 +487,12 @@ const MovieDetails: React.FC = () => {
                           ? `https://image.tmdb.org/t/p/w200${actor.profile_path}`
                           : "/sayed.jpg"
                       }
-                      alt={actor.name}
+                      alt={`${actor.name} এর ছবি`}
                       width={100}
                       height={150}
                       className="rounded-lg shadow-md"
                     />
+
                     <p className="text-center mt-2">{actor.name}</p>
                   </a>
                 </div>
@@ -623,19 +636,19 @@ const MovieDetails: React.FC = () => {
           <div className="flex flex-col items-center mt-4">
             <a href="https://www.themoviedb.org/" className="mb-2">
               <Image
-                src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_1-5bdc75aaebeb75dc7ae79426ddd9be3b2be1e342510f8202baf6bffa71d7f5c4.svg"
+                src="/tmdb.svg"
                 alt="TMDB Logo"
                 width={100}
                 height={100}
                 className="shadow-md"
               />
             </a>
-            <p className="text-gray-500 text-center">
+            <p className="text-oldlace text-center">
               কৃতজ্ঞতা স্বীকারঃ এই ওয়েবসাইটটি TMDB API ব্যবহার করে কিন্তু TMDB
               দ্বারা এন্ডোর্স বা সার্টিফাইড না! সব ধরনের তথ্য TMDB থেকে নেয়া
               হয়েছে।
             </p>
-            <p className="text-gray-500 text-center">
+            <p className="text-oldlace text-center">
               সোর্স কোড:{" "}
               <a
                 className="text-blue-500 text-xl"

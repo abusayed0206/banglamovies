@@ -147,7 +147,7 @@ const MovieList = () => {
       <div className="flex flex-col items-center mt-4">
         <a href="https://www.themoviedb.org/" className="mb-2 ">
           <Image
-            src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_1-5bdc75aaebeb75dc7ae79426ddd9be3b2be1e342510f8202baf6bffa71d7f5c4.svg"
+            src="/tmdb.svg"
             alt="TMDB Logo"
             width={100}
             height={100}
