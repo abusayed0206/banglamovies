@@ -14,7 +14,7 @@ export async function GET(
         `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY}&append_to_response=credits,videos&language=bn-BD`
       ),
       fetch(
-        `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY}&append_to_response=credits,videos&language=en-US`
+        `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY}&append_to_response=credits,videos,images`
       ),
     ]);
 
@@ -34,6 +34,7 @@ export async function GET(
       overview: bnData.overview || enData.overview,
       title: bnData.title || enData.title,
       videos: { results: combinedVideos },
+      
     };
 
     return NextResponse.json(movieData);
