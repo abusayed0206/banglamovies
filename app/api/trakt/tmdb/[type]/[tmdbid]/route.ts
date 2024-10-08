@@ -85,3 +85,5 @@ async function getTraktIdFromTMDb(
     throw new Error("Failed to get Trakt ID from TMDb ID");
   }
 }
+
+export const runtime = "edge";

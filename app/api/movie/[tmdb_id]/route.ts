@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 
@@ -19,7 +19,7 @@ export async function GET(
     ]);
 
     if (!bnResponse.ok || !enResponse.ok) {
-      throw new Error('Failed to fetch movie details');
+      throw new Error("Failed to fetch movie details");
     }
 
     const bnData = await bnResponse.json();
@@ -34,12 +34,15 @@ export async function GET(
       overview: bnData.overview || enData.overview,
       title: bnData.title || enData.title,
       videos: { results: combinedVideos },
-      
     };
 
     return NextResponse.json(movieData);
   } catch (error) {
-    console.error('Error fetching movie details:', error);
-    return NextResponse.json({ error: 'Failed to fetch movie details' }, { status: 500 });
+    console.error("Error fetching movie details:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch movie details" },
+      { status: 500 }
+    );
   }
 }
+export const runtime = "edge";

@@ -358,7 +358,7 @@ const TVDetails: React.FC = () => {
                       onClick={() => {
                         setModalMessage(
                           <div className="flex flex-col items-center justify-center text-center">
-                            <p>এখনো দেখা হয়নি এই সিরিজটি।  সময় পেলে দেখবো।</p>
+                            <p>এখনো দেখা হয়নি এই সিরিজটি। সময় পেলে দেখবো।</p>
                             <p>আমাকে অনুসরণ করতে পারেনঃ</p>
                             <div className="flex justify-center space-x-6">
                               <a
@@ -729,3 +729,4 @@ const TVDetails: React.FC = () => {
 };
 
 export default TVDetails;
+export const runtime = "edge";

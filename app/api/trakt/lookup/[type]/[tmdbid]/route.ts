@@ -121,3 +121,4 @@ async function getWatchedHistory(traktId: number, type: string): Promise<any> {
     throw new Error("Failed to fetch watched history");
   }
 }
+export const runtime = "edge";
