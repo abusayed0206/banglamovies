@@ -3,8 +3,6 @@
 import React, { useEffect, useState, Suspense } from "react";
 import MovieCard from "./components/MovieCard";
 import { useSearchParams, useRouter } from "next/navigation";
-import Image from "next/image";
-import Navbar from "./components/Navbar";
 
 interface Movie {
   id: number;
@@ -97,7 +95,6 @@ const MovieList = () => {
 
   return (
     <div className="justify-center mx-auto px-4">
-      <Navbar />
       <div className="text-center text-xl font-bold mt-4">
         <form onSubmit={handleSearch} className="flex justify-center mb-4">
           <input
@@ -143,33 +140,6 @@ const MovieList = () => {
             পরের পাতা
           </button>
         )}
-      </div>
-      <div className="flex flex-col items-center mt-4">
-        <a href="https://www.themoviedb.org/" className="mb-2 ">
-          <Image
-            src="/tmdb.svg"
-            alt="TMDB Logo"
-            width={100}
-            height={100}
-            className="rounded-sm"
-          />
-        </a>
-
-        <p className="text-gray-500 text-center">
-          কৃতজ্ঞতা স্বীকারঃ এই ওয়েবসাইটটি TMDB API ব্যবহার করে কিন্তু TMDB
-          দ্বারা এন্ডোর্স বা সার্টিফাইড না! সব ধরনের তথ্য TMDB থেকে নেয়া
-          হয়েছে।
-        </p>
-        <p className="text-gray-500 text-center">
-          সোর্স কোড:{" "}
-          <a
-            className="text-blue-500 text-xl"
-            href="https://github.com/abusayed0206/banglamovies/"
-          >
-            গিটহাব
-          </a>
-          <br />
-        </p>
       </div>
     </div>
   );
