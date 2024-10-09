@@ -85,7 +85,7 @@ async function getTraktId(
   type: string
 ): Promise<number | null> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/trakt/tmdb/${type}/${tmdbid}`
+    `/api/trakt/tmdb/${type}/${tmdbid}`
   );
   if (!response.ok) {
     throw new Error("Failed to fetch Trakt ID");
