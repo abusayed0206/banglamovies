@@ -12,19 +12,26 @@ interface Media {
 
 async function getResults(query: string, type: string): Promise<Media[]> {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/search?query=${encodeURIComponent(
-      query
-    )}&type=${type}`,
+    `/api/search?query=${encodeURIComponent(query)}&type=${type}`,
     { cache: "no-store" }
   );
+
   if (!res.ok) {
     throw new Error(
       `Failed to fetch ${type === "movie" ? "movies" : "TV shows"}`
     );
   }
+
   const data = await res.json();
-  return data.results;
+
+  // Optional: Check if `data.results` exists and is an array
+  if (!Array.isArray(data.results)) {
+    throw new Error("Unexpected API response format");
+  }
+
+  return data.results as Media[];
 }
+
 
 export async function SearchResults({
   query,
