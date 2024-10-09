@@ -85,7 +85,7 @@ async function getTraktId(
   type: string
 ): Promise<number | null> {
   const response = await fetch(
-    `/api/trakt/tmdb/${type}/${tmdbid}`
+    `https://banglamovies.pages.dev/api/trakt/tmdb/${type}/${tmdbid}`
   );
   if (!response.ok) {
     throw new Error("Failed to fetch Trakt ID");
