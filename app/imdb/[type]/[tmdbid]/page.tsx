@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { MdContentCopy } from 'react-icons/md' // Importing the copy icon from react-icons
 
 const ImagePage = ({ params }: { params: { type: string; tmdbid: string } }) => {
     const { type, tmdbid } = params
@@ -73,11 +74,15 @@ const ImagePage = ({ params }: { params: { type: string; tmdbid: string } }) => 
                                 <img
                                     src={`https://image.tmdb.org/t/p/w500${image.file_path}`}
                                     alt={`Backdrop ${index + 1}`}
-                                    className="w-full h-48 object-cover rounded-lg transition duration-300 ease-in-out hover:opacity-75"
+                                    className="w-full h-auto object-cover rounded-lg transition duration-300 ease-in-out hover:opacity-75 aspect-w-16 aspect-h-9"
                                     onClick={() => handleImageClick(image.file_path)}
                                 />
-                                <div className="absolute top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 flex justify-center items-center text-white transition duration-300 ease-in-out">
-                                    <span>Copy Link</span>
+                                <div className="absolute top-2 right-2 bg-black bg-opacity-50 p-2 rounded-full cursor-pointer hover:bg-opacity-75 transition duration-200 ease-in-out">
+                                    <MdContentCopy
+                                        size={24}
+                                        color="white"
+                                        onClick={() => handleImageClick(image.file_path)}
+                                    />
                                 </div>
                             </div>
                         ))}
