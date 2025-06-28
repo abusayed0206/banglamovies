@@ -1,9 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
-import axios from "axios";
-
-const TRAKT_CLIENT_ID = process.env.TRAKT_CLIENT_ID;
-const TRAKT_ACCESS_TOKEN = process.env.TRAKT_ACCESS_TOKEN;
+import { TraktAuth } from "../../../../../../lib/trakt-auth";
 
 // Log helper
 const log = (message: string, data?: any): void => {
@@ -102,17 +99,10 @@ async function getWatchedHistory(traktId: number, type: string): Promise<any> {
     }/${traktId}`;
     log(`Requesting watched history from Trakt API (URL: ${traktApiUrl})`);
 
-    const response = await axios.get(traktApiUrl, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${TRAKT_ACCESS_TOKEN}`,
-        "trakt-api-version": "2",
-        "trakt-api-key": TRAKT_CLIENT_ID,
-      },
-    });
+    const data = await TraktAuth.makeAuthenticatedRequest(traktApiUrl, "GET");
 
-    log(`Watched history response for Trakt ID: ${traktId}`, response.data);
-    return response.data;
+    log(`Watched history response for Trakt ID: ${traktId}`, data);
+    return data;
   } catch (error: any) {
     log(
       `Error fetching watched history for Trakt ID: ${traktId}`,
