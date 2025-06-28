@@ -4,6 +4,10 @@
  * Usage: node scripts/exchange-tokens.js YOUR_AUTH_CODE
  */
 
+// Load environment variables
+const dotenv = require('dotenv');
+dotenv.config({ path: '.env.local' });
+
 const { exchangeCodeForTokens } = require('./trakt-oauth-setup.js');
 
 const authCode = process.argv[2];
@@ -13,7 +17,8 @@ if (!authCode) {
   console.log("   node scripts/exchange-tokens.js YOUR_CODE_HERE");
   console.log("");
   console.log("Get your code from:");
-  console.log("https://api.trakt.tv/oauth/authorize?response_type=code&client_id=client_id&redirect_uri=urn:ietf:wg:oauth:2.0:oob");
+  const clientId = process.env.TRAKT_CLIENT_ID || 'YOUR_CLIENT_ID';
+  console.log(`https://api.trakt.tv/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=urn:ietf:wg:oauth:2.0:oob`);
   process.exit(1);
 }
 
