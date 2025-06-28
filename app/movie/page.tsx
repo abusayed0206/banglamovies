@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, Suspense } from "react";
-import MovieCard from "./components/MovieCard";
+import MovieCard from "@/app/components/MovieCard";
 import { useSearchParams, useRouter } from "next/navigation";
 
 interface Movie {

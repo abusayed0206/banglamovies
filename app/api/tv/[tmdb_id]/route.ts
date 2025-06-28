@@ -11,15 +11,15 @@ export async function GET(
   try {
     const [bnResponse, enResponse] = await Promise.all([
       fetch(
-        `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY}&append_to_response=credits,videos&language=bn-BD`
+        `https://api.themoviedb.org/3/tv/${tmdbId}?api_key=${TMDB_API_KEY}&append_to_response=videos,credits&language=bn-BD`
       ),
       fetch(
-        `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY}&append_to_response=credits,videos,images`
+        `https://api.themoviedb.org/3/tv/${tmdbId}?api_key=${TMDB_API_KEY}&append_to_response=videos,credits,images,external_ids`
       ),
     ]);
 
     if (!bnResponse.ok || !enResponse.ok) {
-      throw new Error("Failed to fetch movie details");
+      throw new Error("Failed to fetch TV show details");
     }
 
     const bnData = await bnResponse.json();
@@ -28,21 +28,22 @@ export async function GET(
     const enVideos = enData.videos?.results || [];
     const combinedVideos = [...bnVideos, ...enVideos];
 
-    const movieData = {
+    const tvShowData = {
       ...enData,
       ...bnData,
       overview: bnData.overview || enData.overview,
-      title: bnData.title || enData.title,
+      name: bnData.name || enData.name, // Use 'name' for TV shows
       videos: { results: combinedVideos },
     };
 
-    return NextResponse.json(movieData);
+    return NextResponse.json(tvShowData);
   } catch (error) {
-    console.error("Error fetching movie details:", error);
+    console.error("Error fetching TV show details:", error);
     return NextResponse.json(
-      { error: "Failed to fetch movie details" },
+      { error: "Failed to fetch TV show details" },
       { status: 500 }
     );
   }
 }
+
 export const runtime = "edge";
