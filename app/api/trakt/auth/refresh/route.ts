@@ -23,8 +23,7 @@ export async function POST() {
       grant_type: "refresh_token",
     });
 
-    const responseData = response.data as any;
-    const { access_token, refresh_token } = responseData;
+    const { access_token, refresh_token } = response.data;
 
     // In a real app, you'd save these to a secure database or update environment variables
     console.log("New access token:", access_token);
